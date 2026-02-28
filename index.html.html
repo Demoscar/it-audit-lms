@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>IT Audit Skillternship — NovaBridge Academy</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=DM+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
+
+:root{
+  --navy:#080c18;--navy-mid:#0e1525;--navy-light:#141d30;--navy-card:#192036;
+  --border:#1f2d45;--border-light:#253450;
+  --gold:#c8a84b;--gold-light:#dfc278;--gold-dim:#8a6f2a;--gold-faint:rgba(200,168,75,0.07);
+  --cream:#f0ead8;--cream-dim:#b8ae98;
+  --text:#ddd8c8;--text-mid:#9a9080;--text-dim:#5a5448;
+  --green:#1a6b3c;--green-bright:#2ecc71;
+  --red:#8b1a1a;--red-bright:#e74c3c;
+  --orange:#e67e22;
+  --blue:#1a4a7a;--blue-bright:#3498db;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+
+body{
+  background:var(--navy);
+  color:var(--text);
+  font-family:'Crimson Pro',Georgia,serif;
+  font-size:16px;
+  line-height:1.65;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* GRID BACKGROUND */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(200,168,75,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(200,168,75,.025) 1px,transparent 1px);
+  background-size:48px 48px;pointer-events:none;z-index:0;
+}
+
+/* SCREENS */
+.screen{display:none;position:relative;z-index:1;}
+.screen.active{display:block;}
+
+/* ===========================
+   AUTH SCREEN
+=========================== */
+#auth-screen.active{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1.5rem;}
+
+.auth-wrap{width:100%;max-width:440px;animation:fadeUp .5s ease both;}
+
+.auth-brand{text-align:center;margin-bottom:2rem;}
+.auth-brand-name{
+  font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;
+  letter-spacing:.35em;color:var(--gold);text-transform:uppercase;
+}
+.auth-brand-line{width:48px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:1rem auto;}
+.auth-brand-sub{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.2em;color:var(--text-dim);text-transform:uppercase;}
+
+.auth-card{
+  background:var(--navy-light);
+  border:1px solid var(--border);
+  border-top:2px solid var(--gold);
+  padding:2.25rem;
+}
+
+.tab-row{display:flex;border-bottom:1px solid var(--border);margin-bottom:1.75rem;}
+.tab-btn{
+  flex:1;padding:.65rem;background:none;border:none;border-bottom:2px solid transparent;
+  color:var(--text-mid);font-family:'DM Mono',monospace;font-size:.65rem;
+  letter-spacing:.15em;text-transform:uppercase;cursor:pointer;transition:all .2s;margin-bottom:-1px;
+}
+.tab-btn.on{color:var(--gold);border-bottom-color:var(--gold);}
+
+.form-grp{margin-bottom:1.1rem;}
+.form-lbl{
+  display:block;font-family:'DM Mono',monospace;font-size:.6rem;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--text-mid);margin-bottom:.4rem;
+}
+.form-inp{
+  width:100%;padding:.7rem .9rem;background:var(--navy);border:1px solid var(--border);
+  color:var(--text);font-family:'Crimson Pro',serif;font-size:.95rem;outline:none;
+  transition:border-color .2s;
+}
+.form-inp:focus{border-color:var(--gold);}
+.form-inp::placeholder{color:var(--text-dim);}
+
+.btn-gold{
+  width:100%;padding:.85rem;background:var(--gold);border:none;
+  color:var(--navy);font-family:'Playfair Display',serif;font-size:.88rem;
+  font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
+  transition:all .2s;margin-top:.35rem;
+}
+.btn-gold:hover{background:var(--gold-light);transform:translateY(-1px);}
+.btn-gold:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+
+.msg{
+  margin-top:.85rem;padding:.65rem .9rem;font-family:'DM Mono',monospace;
+  font-size:.68rem;letter-spacing:.05em;display:none;
+}
+.msg.err{background:rgba(139,26,26,.2);border:1px solid var(--red-bright);color:#f1948a;display:block;}
+.msg.ok{background:rgba(26,107,60,.2);border:1px solid var(--green-bright);color:#58d68d;display:block;}
+
+/* ===========================
+   APP SHELL
+=========================== */
+#app-screen.active{display:grid;}
+
+.topbar{
+  position:sticky;top:0;z-index:200;
+  background:rgba(8,12,24,.96);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 1.75rem;height:60px;
+}
+.topbar-brand{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--gold);letter-spacing:.04em;}
+.topbar-brand small{display:block;font-family:'DM Mono',monospace;font-size:.55rem;color:var(--text-dim);letter-spacing:.18em;margin-top:-1px;}
+.topbar-right{display:flex;align-items:center;gap:1.25rem;}
+.avatar{width:34px;height:34px;background:var(--navy-card);border:1px solid var(--gold-dim);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:.9rem;color:var(--gold);}
+.uname{font-family:'DM Mono',monospace;font-size:.62rem;color:var(--text-mid);letter-spacing:.08em;}
+.btn-out{background:none;border:1px solid var(--border);color:var(--text-dim);padding:.35rem .8rem;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:all .2s;}
+.btn-out:hover{border-color:var(--gold);color:var(--gold);}
+
+.layout{display:grid;grid-template-columns:250px 1fr;min-height:calc(100vh - 60px);}
+
+/* SIDEBAR */
+.sidebar{
+  background:var(--navy-mid);border-right:1px solid var(--border);
+  padding:1.5rem 0;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;
+}
+.s-label{font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.25em;text-transform:uppercase;color:var(--text-dim);padding:0 1.25rem;margin-bottom:.6rem;}
+.nav-it{
+  display:flex;align-items:center;gap:.65rem;padding:.6rem 1.25rem;cursor:pointer;
+  transition:all .2s;border-left:2px solid transparent;
+}
+.nav-it:hover{background:var(--gold-faint);}
+.nav-it.on{background:rgba(200,168,75,.06);border-left-color:var(--gold);}
+.nav-it.locked{opacity:.45;cursor:not-allowed;}
+.nav-badge{
+  width:26px;height:26px;display:flex;align-items:center;justify-content:center;
+  font-family:'DM Mono',monospace;font-size:.6rem;border:1px solid;flex-shrink:0;
+}
+.nb-b{border-color:#1e5f8e;color:#4a9fd5;background:rgba(30,95,142,.12);}
+.nb-y{border-color:var(--gold-dim);color:var(--gold);background:rgba(200,168,75,.08);}
+.nb-o{border-color:#7a3a00;color:#e67e22;background:rgba(230,126,34,.08);}
+.nb-r{border-color:#7a1a1a;color:#e74c3c;background:rgba(231,76,60,.08);}
+.nb-g{border-color:var(--border);color:var(--text-dim);background:transparent;}
+.nav-txt{flex:1;}
+.nav-title{font-family:'Crimson Pro',serif;font-size:.88rem;color:var(--text);line-height:1.2;}
+.nav-sub{font-family:'DM Mono',monospace;font-size:.55rem;color:var(--text-dim);letter-spacing:.08em;margin-top:1px;}
+.nav-it.locked .nav-title,.nav-it.locked .nav-sub{color:var(--text-dim);}
+.s-div{height:1px;background:var(--border);margin:.85rem 1.25rem;}
+
+.prog-wrap{padding:1.25rem 1.25rem .5rem;}
+.prog-lbl{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.12em;color:var(--text-dim);margin-bottom:.4rem;}
+.prog-bar{height:2px;background:var(--border);}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--gold-dim),var(--gold));transition:width .6s ease;}
+
+/* MAIN */
+.main{padding:2.5rem 2.75rem;max-width:920px;}
+
+/* VIEWS */
+.view{display:none;}
+.view.on{display:block;animation:fadeUp .35s ease both;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+
+/* DASHBOARD */
+.d-greeting{font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.4rem;}
+.d-title{font-family:'Playfair Display',serif;font-size:2.6rem;font-weight:700;line-height:1.1;color:var(--cream);}
+.d-title em{font-style:italic;color:var(--gold);}
+.d-sub{color:var(--text-mid);margin-top:.65rem;font-size:1rem;max-width:520px;}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin:2rem 0;}
+.stat{background:var(--navy-card);padding:1.1rem 1.25rem;text-align:center;}
+.stat-v{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:var(--gold);}
+.stat-l{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-dim);margin-top:.2rem;}
+
+.lvl-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:2rem;}
+.lvl-card{
+  background:var(--navy-card);border:1px solid var(--border);padding:1.6rem;
+  position:relative;overflow:hidden;cursor:pointer;transition:all .25s;
+}
+.lvl-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.lvl-card.l1::before{background:linear-gradient(90deg,#1e5f8e,#4a9fd5);}
+.lvl-card.l2::before{background:linear-gradient(90deg,var(--gold-dim),var(--gold));}
+.lvl-card.l3::before{background:linear-gradient(90deg,#7a3a00,#e67e22);}
+.lvl-card.l4::before{background:linear-gradient(90deg,#7a1a1a,#e74c3c);}
+.lvl-card:hover:not(.lk){border-color:rgba(200,168,75,.3);transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.35);}
+.lvl-card.lk{opacity:.45;cursor:not-allowed;}
+.c-num{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--text-dim);margin-bottom:.4rem;}
+.c-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--cream);margin-bottom:.15rem;}
+.c-role{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;color:var(--gold);text-transform:uppercase;margin-bottom:.85rem;}
+.c-desc{font-size:.88rem;color:var(--text-mid);line-height:1.5;margin-bottom:1.1rem;}
+.c-meta{display:flex;gap:.85rem;}
+.c-mi{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.08em;color:var(--text-dim);}
+.c-mi strong{color:var(--text);display:block;font-size:.65rem;}
+.c-status{
+  position:absolute;top:1.1rem;right:1.1rem;
+  font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;
+  padding:.2rem .55rem;border:1px solid;
+}
+.s-avail{border-color:#1e5f8e;color:#4a9fd5;background:rgba(30,95,142,.1);}
+.s-prog{border-color:var(--gold-dim);color:var(--gold);background:rgba(200,168,75,.07);}
+.s-done{border-color:var(--green);color:var(--green-bright);background:rgba(26,107,60,.1);}
+.s-lock{border-color:var(--border);color:var(--text-dim);}
+
+/* LEVEL VIEW */
+.lv-header{display:flex;align-items:flex-start;gap:1.75rem;margin-bottom:2.25rem;padding-bottom:1.75rem;border-bottom:1px solid var(--border);}
+.lv-num{font-family:'Playfair Display',serif;font-size:3.5rem;font-weight:900;color:var(--border);line-height:1;flex-shrink:0;}
+.lv-eye{font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.35rem;}
+.lv-h1{font-family:'Playfair Display',serif;font-size:1.85rem;font-weight:700;color:var(--cream);}
+.lv-scenario{color:var(--text-mid);font-size:.92rem;margin-top:.4rem;}
+
+.sec-head{
+  font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:1.1rem;display:flex;align-items:center;gap:.85rem;
+}
+.sec-head::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* TASKS */
+.task-row{
+  display:flex;align-items:flex-start;gap:.85rem;padding:1.1rem 1.1rem;
+  background:var(--navy-card);border:1px solid var(--border);margin-bottom:.6rem;
+  cursor:pointer;transition:all .2s;position:relative;
+}
+.task-row:hover{border-color:rgba(200,168,75,.2);}
+.task-row.done{border-left:3px solid var(--green-bright);}
+.task-row.open-task{border-left:3px solid var(--gold);}
+.chk{
+  width:20px;height:20px;border:1px solid var(--border);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:.7rem;
+  margin-top:2px;transition:all .2s;
+}
+.task-row.done .chk{background:var(--green-bright);border-color:var(--green-bright);color:#fff;}
+.tk-title{font-family:'Crimson Pro',serif;font-size:.97rem;font-weight:600;color:var(--text);margin-bottom:.2rem;}
+.tk-desc{font-size:.82rem;color:var(--text-mid);line-height:1.45;}
+.tk-badge{font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.1em;padding:.18rem .45rem;border:1px solid var(--border);color:var(--text-dim);text-transform:uppercase;flex-shrink:0;}
+
+/* TASK PANEL */
+.t-panel{
+  background:var(--navy-light);border:1px solid var(--border);border-top:2px solid var(--gold);
+  padding:1.75rem;margin-top:.5rem;margin-bottom:.75rem;display:none;animation:fadeUp .3s ease both;
+}
+.t-panel.open{display:block;}
+.tp-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.35rem;}
+.tp-title{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--cream);}
+.btn-close{background:none;border:1px solid var(--border);color:var(--text-dim);padding:.3rem .65rem;font-family:'DM Mono',monospace;font-size:.6rem;cursor:pointer;transition:all .2s;}
+.btn-close:hover{border-color:var(--gold);color:var(--gold);}
+
+.inst-block{background:var(--navy);border-left:3px solid var(--gold-dim);padding:.9rem 1.1rem;margin-bottom:.85rem;}
+.inst-block h4{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:.4rem;}
+.inst-block p{font-size:.88rem;color:var(--text-mid);line-height:1.6;}
+
+.art-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.25rem;}
+.art-card{
+  background:var(--navy);border:1px solid var(--border);padding:.85rem;
+  display:flex;align-items:center;gap:.65rem;cursor:pointer;transition:all .2s;
+}
+.art-card:hover{border-color:rgba(200,168,75,.3);background:var(--gold-faint);}
+.art-icon{width:34px;height:34px;background:rgba(200,168,75,.07);border:1px solid var(--gold-dim);display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;}
+.art-name{font-family:'Crimson Pro',serif;font-size:.88rem;font-weight:600;color:var(--text);}
+.art-type{font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.08em;color:var(--text-dim);text-transform:uppercase;}
+
+.t-submit{border-top:1px solid var(--border);padding-top:1.25rem;display:flex;gap:.85rem;align-items:center;flex-wrap:wrap;}
+.btn-complete{
+  padding:.7rem 1.75rem;background:var(--gold);border:none;color:var(--navy);
+  font-family:'Playfair Display',serif;font-size:.82rem;font-weight:700;letter-spacing:.05em;
+  cursor:pointer;transition:all .2s;
+}
+.btn-complete:hover{background:var(--gold-light);}
+.btn-sec{
+  padding:.7rem 1.25rem;background:none;border:1px solid var(--border);color:var(--text-dim);
+  font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:all .2s;
+}
+.btn-sec:hover{border-color:var(--gold);color:var(--gold);}
+
+/* LOCKED LEVEL */
+.locked-msg{text-align:center;padding:4rem 0;color:var(--text-dim);}
+.locked-msg .lk-icon{font-size:2.5rem;margin-bottom:.85rem;}
+.locked-msg h3{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--cream);margin-bottom:.5rem;}
+
+/* HR ROSTER */
+.roster-tbl{width:100%;border-collapse:collapse;font-size:.82rem;}
+.roster-tbl th{font-family:'DM Mono',monospace;font-size:.57rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);text-align:left;padding:.65rem .9rem;border-bottom:1px solid var(--border);background:var(--navy-card);}
+.roster-tbl td{padding:.65rem .9rem;border-bottom:1px solid rgba(31,45,69,.4);color:var(--text-mid);vertical-align:top;}
+.roster-tbl tr:hover td{background:rgba(200,168,75,.02);}
+.emp-name{font-family:'Crimson Pro',serif;font-size:.95rem;color:var(--text);font-weight:600;}
+.cert{display:inline-block;padding:.12rem .35rem;background:rgba(200,168,75,.07);border:1px solid var(--gold-dim);font-family:'DM Mono',monospace;font-size:.52rem;color:var(--gold);margin:1px;}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:3rem 1.5rem;overflow-y:auto;}
+.overlay.open{display:flex;}
+.modal{background:var(--navy-light);border:1px solid var(--border);border-top:2px solid var(--gold);width:100%;max-width:720px;animation:fadeUp .3s ease both;margin:auto;}
+.modal-hd{padding:1.35rem 1.75rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--navy-light);z-index:1;}
+.modal-title{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--cream);}
+.modal-body{padding:1.75rem;}
+.modal-body h3{font-family:'Playfair Display',serif;font-size:1rem;color:var(--gold);margin:1.35rem 0 .6rem;}
+.modal-body h3:first-child{margin-top:0;}
+.modal-body p{color:var(--text-mid);font-size:.9rem;line-height:1.7;margin-bottom:.65rem;}
+
+.doc-tbl{width:100%;border-collapse:collapse;margin-bottom:.85rem;font-size:.82rem;}
+.doc-tbl th{background:var(--navy);padding:.55rem .7rem;font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);text-align:left;}
+.doc-tbl td{padding:.55rem .7rem;border-bottom:1px solid var(--border);color:var(--text-mid);}
+
+.finding{background:var(--navy);border:1px solid var(--border);padding:1.1rem;margin-bottom:.85rem;}
+.finding.h{border-left:3px solid var(--red-bright);}
+.finding.m{border-left:3px solid var(--orange);}
+.finding.l{border-left:3px solid var(--gold);}
+.f-sev{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;margin-bottom:.4rem;}
+.finding.h .f-sev{color:var(--red-bright);}
+.finding.m .f-sev{color:var(--orange);}
+.finding.l .f-sev{color:var(--gold);}
+.f-title{font-family:'Crimson Pro',serif;font-size:.95rem;font-weight:600;color:var(--text);margin-bottom:.65rem;}
+.f-row{display:grid;grid-template-columns:90px 1fr;gap:.4rem;margin-bottom:.35rem;font-size:.83rem;}
+.f-row label{font-family:'DM Mono',monospace;font-size:.57rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;padding-top:1px;}
+
+.score-tbl{width:100%;border-collapse:collapse;font-size:.82rem;}
+.score-tbl th{font-family:'DM Mono',monospace;font-size:.57rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);padding:.65rem;border-bottom:1px solid var(--border);text-align:left;}
+.score-tbl td{padding:.65rem;border-bottom:1px solid rgba(31,45,69,.4);color:var(--text-mid);}
+
+/* CERT */
+.cert-box{background:var(--navy);border:2px solid var(--gold-dim);padding:2.75rem;text-align:center;position:relative;}
+.cert-box::before,.cert-box::after{content:'';position:absolute;top:8px;left:8px;right:8px;bottom:8px;border:1px solid rgba(200,168,75,.15);pointer-events:none;}
+.cert-seal{width:72px;height:72px;border:2px solid var(--gold);border-radius:50%;margin:0 auto 1.25rem;display:flex;align-items:center;justify-content:center;font-size:1.65rem;}
+.cert-head{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:.85rem;}
+.cert-person{font-family:'Playfair Display',serif;font-size:1.85rem;font-style:italic;color:var(--cream);margin-bottom:.35rem;}
+.cert-role{font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.85rem;}
+.cert-body{font-size:.88rem;color:var(--text-mid);max-width:380px;margin:0 auto 1.25rem;}
+.cert-line{width:140px;height:1px;background:var(--gold-dim);margin:1.25rem auto .35rem;}
+.cert-sig{font-family:'Playfair Display',serif;font-style:italic;color:var(--text-mid);}
+.cert-sig small{display:block;font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;font-style:normal;margin-top:.2rem;}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:1.75rem;right:1.75rem;z-index:3000;
+  background:var(--navy-card);border:1px solid var(--border);border-left:3px solid var(--gold);
+  padding:.85rem 1.25rem;font-family:'DM Mono',monospace;font-size:.68rem;
+  letter-spacing:.08em;color:var(--text);
+  transform:translateY(80px);opacity:0;transition:all .3s;max-width:320px;
+}
+.toast.show{transform:translateY(0);opacity:1;}
+
+/* PREFORMATTED */
+pre{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--text-mid);line-height:1.8;white-space:pre-wrap;}
+
+/* RESPONSIVE */
+@media(max-width:700px){
+  .layout{grid-template-columns:1fr;}
+  .sidebar{display:none;}
+  .lvl-grid{grid-template-columns:1fr;}
+  .stats{grid-template-columns:1fr 1fr;}
+  .art-grid{grid-template-columns:1fr;}
+  .main{padding:1.5rem;}
+  .d-title{font-size:1.85rem;}
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen" class="screen active">
+  <div class="auth-wrap">
+    <div class="auth-brand">
+      <div class="auth-brand-name">NovaBridge Academy</div>
+      <div class="auth-brand-line"></div>
+      <div class="auth-brand-sub">IT Audit Skillternship Program</div>
+    </div>
+    <div class="auth-card">
+      <div class="tab-row">
+        <button class="tab-btn on" onclick="switchTab('login',this)">Sign In</button>
+        <button class="tab-btn" onclick="switchTab('reg',this)">Enroll</button>
+      </div>
+      <div id="f-login">
+        <div class="form-grp"><label class="form-lbl">Email</label><input class="form-inp" id="l-email" type="email" placeholder="your@email.com"/></div>
+        <div class="form-grp"><label class="form-lbl">Password</label><input class="form-inp" id="l-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+        <button class="btn-gold" id="l-btn" onclick="doLogin()">Access Program</button>
+        <div class="msg" id="l-msg"></div>
+      </div>
+      <div id="f-reg" style="display:none">
+        <div class="form-grp"><label class="form-lbl">Full Name</label><input class="form-inp" id="r-name" type="text" placeholder="Your full name"/></div>
+        <div class="form-grp"><label class="form-lbl">Email</label><input class="form-inp" id="r-email" type="email" placeholder="your@email.com"/></div>
+        <div class="form-grp"><label class="form-lbl">Password (min 6 chars)</label><input class="form-inp" id="r-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doReg()"/></div>
+        <button class="btn-gold" id="r-btn" onclick="doReg()">Begin Enrollment</button>
+        <div class="msg" id="r-msg"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP SCREEN -->
+<div id="app-screen" class="screen">
+  <header class="topbar">
+    <div class="topbar-brand">NovaBridge Academy<small>IT Audit Skillternship</small></div>
+    <div class="topbar-right">
+      <div style="display:flex;align-items:center;gap:.65rem;">
+        <div class="avatar" id="av">—</div>
+        <div class="uname" id="uname">—</div>
+      </div>
+      <button class="btn-out" onclick="doLogout()">Sign Out</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="sidebar">
+      <div class="s-label">Navigation</div>
+      <div class="nav-it on" onclick="nav('dash')"><div class="nav-badge nb-y">⌂</div><div class="nav-txt"><div class="nav-title">Dashboard</div><div class="nav-sub">Overview</div></div></div>
+      <div class="s-div"></div>
+      <div class="s-label">Levels</div>
+      <div class="nav-it" id="sn-l1" onclick="nav('l1')"><div class="nav-badge nb-b">L1</div><div class="nav-txt"><div class="nav-title">IT Auditor</div><div class="nav-sub">8 weeks · SOC 2</div></div></div>
+      <div class="nav-it locked" id="sn-l2" onclick="nav('l2')"><div class="nav-badge nb-g">L2</div><div class="nav-txt"><div class="nav-title">Senior IT Auditor</div><div class="nav-sub">10 weeks · Cloud</div></div><span id="lk2" style="font-size:.7rem;color:var(--text-dim)">🔒</span></div>
+      <div class="nav-it locked" id="sn-l3" onclick="nav('l3')"><div class="nav-badge nb-g">L3</div><div class="nav-txt"><div class="nav-title">IT Audit Manager</div><div class="nav-sub">12 weeks · Full Cycle</div></div><span id="lk3" style="font-size:.7rem;color:var(--text-dim)">🔒</span></div>
+      <div class="nav-it locked" id="sn-l4" onclick="nav('l4')"><div class="nav-badge nb-g">L4</div><div class="nav-txt"><div class="nav-title">Senior Manager</div><div class="nav-sub">14 weeks · Strategy</div></div><span id="lk4" style="font-size:.7rem;color:var(--text-dim)">🔒</span></div>
+      <div class="s-div"></div>
+      <div class="s-label">Resources</div>
+      <div class="nav-it" onclick="nav('hr')"><div class="nav-badge nb-g" style="font-size:.5rem">HR</div><div class="nav-txt"><div class="nav-title">HR Roster</div><div class="nav-sub">Staff Directory</div></div></div>
+      <div class="prog-wrap">
+        <div class="prog-lbl"><span>Progress</span><span id="pct">0%</span></div>
+        <div class="prog-bar"><div class="prog-fill" id="pfill" style="width:0%"></div></div>
+      </div>
+    </nav>
+
+    <main class="main">
+
+      <!-- DASHBOARD -->
+      <div class="view on" id="v-dash">
+        <div style="margin-bottom:2.25rem">
+          <div class="d-greeting" id="greet">Welcome back</div>
+          <h1 class="d-title">Your <em>IT Audit</em><br>Career Journey</h1>
+          <p class="d-sub">Complete all four levels to earn your full NovaBridge IT Audit Skillternship certification. Each level unlocks after passing the previous one.</p>
+        </div>
+        <div class="stats">
+          <div class="stat"><div class="stat-v" id="s-lv">0</div><div class="stat-l">Levels Done</div></div>
+          <div class="stat"><div class="stat-v" id="s-tk">0</div><div class="stat-l">Tasks Complete</div></div>
+          <div class="stat"><div class="stat-v" id="s-ar">0</div><div class="stat-l">Artifacts Viewed</div></div>
+          <div class="stat"><div class="stat-v" id="s-ct">0</div><div class="stat-l">Certificates</div></div>
+        </div>
+        <div class="lvl-grid">
+          <div class="lvl-card l1" onclick="nav('l1')">
+            <div class="c-status s-avail" id="cs-l1">Available</div>
+            <div class="c-num">Level 01</div>
+            <div class="c-title">IT Auditor</div>
+            <div class="c-role">Junior Associate</div>
+            <div class="c-desc">SOC 2 readiness audit covering Access Management and Change Management. Execute control tests, document findings, and complete workpapers.</div>
+            <div class="c-meta"><div class="c-mi"><strong>8</strong>Weeks</div><div class="c-mi"><strong>8</strong>Tasks</div><div class="c-mi"><strong>7</strong>Artifacts</div></div>
+          </div>
+          <div class="lvl-card l2 lk" id="cc-l2" onclick="nav('l2')">
+            <div class="c-status s-lock" id="cs-l2">Locked</div>
+            <div class="c-num">Level 02</div>
+            <div class="c-title">Senior IT Auditor</div>
+            <div class="c-role">Senior Associate</div>
+            <div class="c-desc">Cloud Security Audit of AWS environment. Lead fieldwork, supervise a junior auditor, write findings, and manage stakeholders.</div>
+            <div class="c-meta"><div class="c-mi"><strong>10</strong>Weeks</div><div class="c-mi"><strong>8</strong>Tasks</div><div class="c-mi"><strong>9</strong>Artifacts</div></div>
+          </div>
+          <div class="lvl-card l3 lk" id="cc-l3" onclick="nav('l3')">
+            <div class="c-status s-lock" id="cs-l3">Locked</div>
+            <div class="c-num">Level 03</div>
+            <div class="c-title">IT Audit Manager</div>
+            <div class="c-role">Manager</div>
+            <div class="c-desc">Manage full audit lifecycle across Cybersecurity, IT Operations, and BCP. Lead a team of 3, present to executives, write board reports.</div>
+            <div class="c-meta"><div class="c-mi"><strong>12</strong>Weeks</div><div class="c-mi"><strong>10</strong>Tasks</div><div class="c-mi"><strong>11</strong>Artifacts</div></div>
+          </div>
+          <div class="lvl-card l4 lk" id="cc-l4" onclick="nav('l4')">
+            <div class="c-status s-lock" id="cs-l4">Locked</div>
+            <div class="c-num">Level 04</div>
+            <div class="c-title">Senior Manager</div>
+            <div class="c-role">Senior Manager</div>
+            <div class="c-desc">Lead the IT audit function through an OCC examination and SOX ITGC audit. Drive strategy, brief the Board Audit Committee, develop the team.</div>
+            <div class="c-meta"><div class="c-mi"><strong>14</strong>Weeks</div><div class="c-mi"><strong>12</strong>Tasks</div><div class="c-mi"><strong>13</strong>Artifacts</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LEVEL 1 -->
+      <div class="view" id="v-l1">
+        <div class="lv-header">
+          <div class="lv-num">01</div>
+          <div>
+            <div class="lv-eye">Level 1 · 8-Week Simulation</div>
+            <h2 class="lv-h1">IT Auditor</h2>
+            <p class="lv-scenario"><strong>Scenario:</strong> NovaBridge Annual SOC 2 Readiness Audit. You are a newly onboarded IT Audit Associate assigned to the Access Management and Change Management domains. Your Senior, Marcus Webb, oversees your work.</p>
+          </div>
+        </div>
+        <div class="sec-head">Tasks</div>
+
+        <div class="task-row" id="tr-l1t1" onclick="togglePanel('l1t1')"><div class="chk" id="ck-l1t1"></div><div style="flex:1"><div class="tk-title">1. Review Audit Charter &amp; Engagement Letter</div><div class="tk-desc">Read the NovaBridge audit charter and SOC 2 engagement letter. Answer 5 comprehension questions demonstrating understanding of scope, objectives, and authority.</div></div><div class="tk-badge">Foundational</div></div>
+        <div class="t-panel" id="tp-l1t1">
+          <div class="tp-head"><div class="tp-title">Task 1: Review Audit Charter &amp; Engagement Letter</div><button class="btn-close" onclick="closePanel('l1t1')">✕ Close</button></div>
+          <div class="inst-block"><h4>Background</h4><p>Before any fieldwork begins, you must thoroughly understand the authority, scope, and objectives of the engagement. The Audit Charter establishes the IAD's authority; the Engagement Letter defines this specific audit.</p></div>
+          <div class="inst-block"><h4>Your Instructions</h4><p>1. Open and read the Audit Charter and Engagement Letter below.<br>2. Answer these 5 questions in writing:<br><br><strong>Q1.</strong> What is the stated scope of the SOC 2 audit engagement?<br><strong>Q2.</strong> Which Trust Service Criteria (TSC) are in scope for NovaBridge?<br><strong>Q3.</strong> Who has authorized the Internal Audit Department to conduct this review?<br><strong>Q4.</strong> What is the expected deliverable at the end of this engagement?<br><strong>Q5.</strong> What is the audit period under review?</p></div>
+          <div class="art-grid">
+            <div class="art-card" onclick="openMod('m-charter')"><div class="art-icon">📄</div><div><div class="art-name">Audit Charter</div><div class="art-type">Official Document</div></div></div>
+            <div class="art-card" onclick="openMod('m-engage')"><div class="art-icon">📋</div><div><div class="art-name">Engagement Letter</div><div class="art-type">SOC 2 Readiness</div></div></div>
+          </div>
+          <div class="t-submit"><button class="btn-complete" onclick="completeTask('l1t1')">✓ Mark Complete</button><button class="btn-sec" onclick="openMod('m-sc1')">View Scorecard</button></div>
+        </div>
+
+        <div class="task-row" id="tr-l1t2" onclick="togglePanel('l1t2')"><div class="chk" id="ck-l1t2"></div><div style="flex:1"><div class="tk-title">2. Complete Risk &amp; Control Matrix (RACM)</div><div class="tk-desc">Using the provided template, complete the RACM for the Access Management domain. Identify risks, map controls, and assign control owners from the HR roster.</div></div><div class="tk-badge">Core</div></div>
+        <div class="t-panel" id="tp-l1t2">
+          <div class="tp-head"><div class="tp-title">Task 2: Complete Risk &amp; Control Matrix (RACM)</div><button class="btn-close" onclick="closePanel('l1t2')">✕ Close</button></div>
+          <div class="inst-block"><h4>Background</h4><p>The RACM maps each identified risk to a corresponding control, documents the control owner, frequency, and type, and tracks your testing approach. You have been given a partially completed RACM for Access Management.</p></div>
+          <div class="inst-block"><h4>Your Instructions</h4><p>1. Open the RACM Template below.<br>2. Complete the 5 blank rows using the risk descriptions provided.<br>3. For each blank row: identify the control description, assign a control owner from the HR Roster, determine control type (Preventive / Detective / Corrective), and frequency (Per event / Daily / Monthly / Quarterly / Annual).<br>4. Ensure all control objectives align with SOC 2 CC6 (Logical and Physical Access) criteria.</p></div>
+          <div class="art-grid">
+            <div class="art-card" onclick="openMod('m-racm')"><div class="art-icon">📊</div><div><div class="art-name">RACM Template</div><div class="art-type">Partially Complete</div></div></div>
+            <div class="art-card" onclick="nav('hr')"><div class="art-icon">👥</div><div><div class="art-name">HR Roster</div><div class="art-type">Control Owner Reference</div></div></div>
+          </div>
+          <div class="t-submit"><button class="btn-complete" onclick="completeTask('l1t2')">✓ Mark Complete</button></div>
+        </div>
+
+        <div class="task-row" id="tr-l1t3" onclick="togglePanel('l1t3')"><div class="chk" id="ck-l1t3"></div><div style="flex:1"><div class="tk-title">3. Conduct Walkthrough — Access Management</div><div class="tk-desc">Review the provided stakeholder interview transcript with IT Manager Derek Okafor. Extract the 5 key controls described and document them in the walkthrough template.</div></div><div class="tk-badge">Fieldwork</div></div>
+        <div class="t-panel" id="tp-l1t3">
+          <div class="tp-head"><div class="tp-title">Task 3: Conduct Walkthrough — Access Management</div><button class="btn-close" onclick="closePanel('l1t3')">✕ Close</button></div>
+          <div class="inst-block"><h4>Background</h4><p>A walkthrough traces one transaction end-to-end to validate the process description and confirm controls exist as designed. You conducted a meeting with Derek Okafor — the transcript is below.</p></div>
+          <div class="inst-block"><h4>Your Instructions</h4><p>1. Read the full interview transcript carefully.<br>2. Identify and extract exactly 5 key controls described in the conversation.<br>3. For each control, document: Control Name, Description, Evidence Type, Frequency, and any Follow-Up items.<br>4. Note any gaps or areas requiring additional evidence.</p></div>
+          <div class="art-grid">
+            <div class="art-card" onclick="openMod('m-transcript')"><div class="art-icon">🎙️</div><div><div class="art-name">Interview Transcript</div><div class="art-type">Derek Okafor · IT Manager</div></div></div>
+            <div class="art-card" onclick="openMod('m-wkthru')"><div class="art-icon">📝</div><div><div class="art-name">Walkthrough Template</div><div class="art-type">Complete &amp; Submit</div></div></div>
+          </div>
+          <div class="t-submit"><button class="btn-complete" onclick="completeTask('l1t3')">✓ Mark Complete</button></div>
+        </div>
+
+        <div class="task-row" id="tr-l1t4" onclick="togglePanel('l1t4')"><div class="chk" id="ck-l1t4"></div><div style="flex:1"><div class="tk-title">4. Execute Control Tests (5 Tests)</div><div class="tk-desc">Using evidence samples (user access logs, provisioning records, ITGC screenshots), perform Tests of Design (TOD) and Tests of Effectiveness (TOE) for 5 controls.</div></div><div class="tk-badge">Testing</div></div>
+        <div class="t-panel" id="tp-l1t4">
+          <div class="tp-head"><div class="tp-title">Task 4: Execute Control Tests</div><button class="btn-close" onclick="closePanel('l1t4')">✕ Close</button></div>
+          <div class="inst-block"><h4>Background</h4><p>Control testing evaluates whether controls are designed effectively (TOD) and operating effectively (TOE) over the audit period. You will test 5 controls in the Access Management domain using the provided evidence samples.</p></div>
+          <div class="inst-block"><h4>Your Instructions</h4><p>1. Open the Evidence Samples artifact — it contains user access logs and provisioning records.<br>2. For each of the 5 controls in your RACM, perform TOD and TOE.<br>3. Document: test procedures, population, sample size and rationale, items tested, and your conclusion (Pass / Fail / Exception Noted).<br>4. Flag any exceptions for Task 5.</p></div>
+          <div class="art-grid">
+            <div class="art-card" onclick="openMod('m-evidence')"><div class="art-icon">🗂️</div><div><div class="art-name">Evidence Samples</div><div class="art-type">Access Logs · Provisioning Records</div></div></div>
+            <div class="art-card" onclick="openMod('m-testtempl')"><div class="art-icon">🧪</div><div><div class="art-name">Control Test Template</div><div class="art-type">TOD + TOE Workpaper</div></div></div>
+          </div>
+          <div class="t-submit"><button class="btn-complete" onclick="completeTask('l1t4')">✓ Mark Complete</button></div>
+        </div>
+
+        <div class="task-row" id="tr-l1t5" onclick="togglePanel('l1t5')"><div class="chk" id="ck-l1t5"></div><div style="flex:1"><div class="tk-title">5. Identify &amp; Document Control Exceptions</div><div class="tk-desc">From your testing results, identify 3 control exceptions. Document each using the firm's finding template including criteria, condition, cause, effect, and recommendation.</div></div><div class="tk-badge">Findings</div></div>
+        <div class="t-panel" id="tp-l1t5">
+          <div class="tp-head"><div class="tp-title">Task 5: Identify &amp; Document Control Exceptions</div><button class="btn-close" onclick="closePanel('l1t5')">✕ Close</button></div>
+          <div class="inst-block"><h4>Background</h4><p>An exception occurs when a control does not operate as intended. Each exception must be formally documented as a finding with full context using the 5Cs framework.</p></div>
+          <div class="inst-block"><h4>Finding Structure (5Cs)</h4><p><strong>Criteria:</strong> What should be happening (policy / standard / regulation)<br><strong>Condition:</strong> What you actually observed during testing<br><strong>Cause:</strong> Root cause of the gap<br><strong>Consequence (Effect):</strong> Risk or impact to NovaBridge<br><strong>Corrective Action (Recommendation):</strong> Your suggested remediation</p></div>
+          <div class="art-grid">
+            <div class="art-card" onclick="openMod('m-findtempl')"><div class="art-icon">⚠️</div><div><div class="art-name">Finding Template</div><div class="art-type">Exception Documentation</div></div></div>
+            <div class="art-card" onclick="openMod('m-sampfinds')"><div class="art-icon">📎</div><div><div class="art-name">Sample Findings</div><div class="art-type">Completed Reference Examples</div></div></div>
+          </div>
+          <div class="t-submit"><button class="btn-complete" onclick="completeTask('l1t5')">✓ Mark Complete</button></div>
+        </div>
+
+        <div class="task-row" id="tr-l1t6" onclick="togglePanel('l1t6')"><div class="chk" id="ck-l1t6"></div><div style="flex:1"><div class="tk-title">6. Draft Audit Memo — Work Performed Summary</div><div class="tk-desc">Write a professional audit memo summarizing the work performed, scope covered, evidence obtained, and exceptions noted during your Access Management testing.</div></div><div class="tk-badge">Reporting</div></div>
+        <div class="t-panel" id="tp-l1t6">
+          <div class="tp-head"><div class="tp-title">Task 6: Draft Audit Memo</div><button class="btn-close" onclick="closePanel('l1t6')">✕ Close</button></div>
+          <div class="inst-block"><h4>Your Instructions</h4><p>Using the memo template, draft a professional internal audit memo covering: audit area and period, scope of work performed, testing methodology, number of controls tested and results, exceptions identified (reference Task 5 findings), conclusions, and any open items. Tone: formal, objective, concise. Maximum 1 page.</p></div>
+          <div class="art-grid">
+            <div class="art-card" onclick="openMod('m-memo')"><div class="art-icon">📃</div><div><div class="art-name">Audit Memo Template</div><div class="art-type">Work Performed Summary</div></div></div>
+          </div>
+          <div class="t-submit"><button class="btn-complete" onclick="completeTask('l1t6')">✓ Mark Complete</button></div>
+        </div>
+
+        <div class="task-row" id="tr-l1t7" onclick="togglePanel('l1t7')"><div class="chk" id="ck-l1t7"></div><div style="flex:1"><div class="tk-title">7. Complete Workpaper Index &amp; Tie-Out</div><div class="tk-desc">Organize your workpapers using the index template. Confirm all evidence references are tied out correctly and each control tested has supporting documentation.</div></div><div class="tk-badge">Documentation</div></div>
+        <div class="t-panel" id="tp-l1t7">
+          <div class="tp-head"><div class="tp-title">Task 7: Workpaper Index &amp; Tie-Out</div><button class="btn-close" onclick="closePanel('l1t7')">✕ Close</button></div>
+          <div class="inst-block"><h4>Your Instructions</h4><p>1. Complete the Workpaper Index template — list each workpaper, its reference number, preparer, reviewer, and date.<br>2. Perform a tie-out: confirm each control tested in Task 4 has a corresponding workpaper reference.<br>3. Flag any missing items with a note.<br>4. Confirm the index is complete and accurate before submission to your Senior.</p></div>
+          <div class="art-grid">
+            <div class="art-card" onclick="openMod('m-wpindex')"><div class="art-icon">🗃️</div><div><div class="art-name">Workpaper Index</div><div class="art-type">Complete &amp; Sign Off</div></div></div>
+          </div>
+          <div class="t-submit"><button class="btn-complete" onclick="completeTask('l1t7')">✓ Mark Complete</button></div>
+        </div>
+
+        <div class="task-row" id="tr-l1t8" onclick="togglePanel('l1t8')"><div class="chk" id="ck-l1t8"></div><div style="flex:1"><div class="tk-title">8. Respond to Senior Reviewer Feedback</div><div class="tk-desc">Marcus Webb has reviewed your workpapers and left 4 review notes. Read each comment and write your professional response, incorporating corrections where needed.</div></div><div class="tk-badge">Review</div></div>
+        <div class="t-panel" id="tp-l1t8">
+          <div class="tp-head"><div class="tp-title">Task 8: Respond to Senior Reviewer Feedback</div><button class="btn-close" onclick="closePanel('l1t8')">✕ Close</button></div>
+          <div class="inst-block"><h4>Review Note 1 — Marcus Webb</h4><p><em>"Your TOE for Control AC-03 does not document the sample size rationale. Why did you test 25 items? Reference the sampling methodology in the audit program."</em></p></div>
+          <div class="inst-block"><h4>Review Note 2 — Marcus Webb</h4><p><em>"Finding #2 is missing the 'Effect' component. Without quantifying the business impact, we cannot rate this as High. Please revise."</em></p></div>
+          <div class="inst-block"><h4>Review Note 3 — Marcus Webb</h4><p><em>"The workpaper index shows WP-04 as 'N/A' but we tested that control. Please confirm evidence was obtained and update the index."</em></p></div>
+          <div class="inst-block"><h4>Review Note 4 — Marcus Webb</h4><p><em>"Good work overall on the walkthrough documentation. The interview transcript extraction was thorough. Please add page references for the three policies cited in WP-02."</em></p></div>
+          <div class="inst-block"><h4>Your Instructions</h4><p>Write a professional response to each of the 4 review notes. Your responses should: acknowledge the feedback, explain the action taken, and confirm what was updated. This demonstrates your ability to receive and act on direction professionally.</p></div>
+          <div class="t-submit"><button class="btn-complete" onclick="completeTask('l1t8',true,'l1','Level 1 — IT Auditor')">✓ Complete Level 1</button></div>
+        </div>
+
+        <div class="sec-head" style="margin-top:2rem">Level 1 Artifacts</div>
+        <div class="art-grid" style="grid-template-columns:1fr 1fr 1fr">
+          <div class="art-card" onclick="openMod('m-charter')"><div class="art-icon">📄</div><div><div class="art-name">Audit Charter</div><div class="art-type">NovaBridge IAD</div></div></div>
+          <div class="art-card" onclick="openMod('m-engage')"><div class="art-icon">📋</div><div><div class="art-name">Engagement Letter</div><div class="art-type">SOC 2 Readiness</div></div></div>
+          <div class="art-card" onclick="openMod('m-racm')"><div class="art-icon">📊</div><div><div class="art-name">RACM Template</div><div class="art-type">Access Management</div></div></div>
+          <div class="art-card" onclick="openMod('m-transcript')"><div class="art-icon">🎙️</div><div><div class="art-name">Walkthrough Transcript</div><div class="art-type">Derek Okafor</div></div></div>
+          <div class="art-card" onclick="openMod('m-evidence')"><div class="art-icon">🗂️</div><div><div class="art-name">Evidence Samples</div><div class="art-type">5 Control Tests</div></div></div>
+          <div class="art-card" onclick="openMod('m-sampfinds')"><div class="art-icon">⚠️</div><div><div class="art-name">Sample Findings</div><div class="art-type">H/M/L Examples</div></div></div>
+          <div class="art-card" onclick="openMod('m-sc1')"><div class="art-icon">🏆</div><div><div class="art-name">Level 1 Scorecard</div><div class="art-type">10 Competencies</div></div></div>
+        </div>
+      </div>
+
+      <!-- LEVEL 2 -->
+      <div class="view" id="v-l2">
+        <div class="lv-header">
+          <div class="lv-num">02</div>
+          <div>
+            <div class="lv-eye">Level 2 · 10-Week Simulation</div>
+            <h2 class="lv-h1">Senior IT Auditor</h2>
+            <p class="lv-scenario"><strong>Scenario:</strong> NovaBridge Cloud Security Audit — AWS environment review and vendor risk assessment of third-party payment processor "PayBridge LLC." You lead fieldwork and supervise junior auditor Aisha Nwosu.</p>
+          </div>
+        </div>
+        <div id="l2-lock" class="locked-msg"><div class="lk-icon">🔒</div><h3>Level Locked</h3><p>Complete Level 1 to unlock the Senior IT Auditor simulation.</p></div>
+        <div id="l2-open" style="display:none">
+          <div class="sec-head">Tasks</div>
+          <div class="task-row" id="tr-l2t1" onclick="togglePanel('l2t1')"><div class="chk" id="ck-l2t1"></div><div style="flex:1"><div class="tk-title">1. Review &amp; Update Cloud Security Audit Program</div><div class="tk-desc">Update the existing audit program based on CSA CCM v4.0 and NIST CSF 2.0 to reflect NovaBridge's AWS environment. Add 3 new cloud-specific control objectives.</div></div><div class="tk-badge">Planning</div></div>
+          <div class="t-panel" id="tp-l2t1"><div class="tp-head"><div class="tp-title">Task 1: Update Cloud Security Audit Program</div><button class="btn-close" onclick="closePanel('l2t1')">✕ Close</button></div><div class="inst-block"><h4>Background</h4><p>NovaBridge migrated 60% of its infrastructure to AWS over the last 18 months. The existing audit program was written for on-premise systems. You'll use CSA CCM v4.0 (Cloud Controls Matrix) and NIST CSF 2.0 as reference frameworks.</p></div><div class="inst-block"><h4>Your Instructions</h4><p>1. Open the Cloud Audit Program below.<br>2. Identify at least 3 areas that are inadequate for cloud environments.<br>3. Add 3 new control objectives specific to AWS: IAM role governance, CloudTrail logging, and S3 bucket security.<br>4. Update the framework mapping column to reference CSA CCM v4.0 domain codes.</p></div><div class="art-grid"><div class="art-card" onclick="openMod('m-cloudprog')"><div class="art-icon">☁️</div><div><div class="art-name">Cloud Audit Program</div><div class="art-type">Existing Draft · Update Required</div></div></div></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l2t1')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l2t2" onclick="togglePanel('l2t2')"><div class="chk" id="ck-l2t2"></div><div style="flex:1"><div class="tk-title">2. Prepare Audit Planning Memo &amp; Scoping Document</div><div class="tk-desc">Draft the planning memo defining objectives, scope boundaries, methodology, resource requirements, and the 10-week timeline for the Cloud Security Audit.</div></div><div class="tk-badge">Planning</div></div>
+          <div class="t-panel" id="tp-l2t2"><div class="tp-head"><div class="tp-title">Task 2: Audit Planning Memo &amp; Scoping Document</div><button class="btn-close" onclick="closePanel('l2t2')">✕ Close</button></div><div class="inst-block"><h4>Your Instructions</h4><p>Draft the planning memo and scoping document. Include: audit objectives (3–4 specific), systems in scope (AWS VPC, EC2, S3, IAM, CloudTrail and regions), what is excluded and why, risk assessment basis, resource plan (who does what, hours per person), and a detailed 10-week timeline with milestones.</p></div><div class="art-grid"><div class="art-card" onclick="openMod('m-planmemo')"><div class="art-icon">📅</div><div><div class="art-name">Planning Memo Template</div><div class="art-type">Complete &amp; Submit</div></div></div></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l2t2')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l2t3" onclick="togglePanel('l2t3')"><div class="chk" id="ck-l2t3"></div><div style="flex:1"><div class="tk-title">3. Review Junior Auditor Workpaper (5 Errors)</div><div class="tk-desc">Review Aisha Nwosu's draft workpaper for IAM Role Review. Identify the 5 intentional errors and document your review notes using proper reviewer language.</div></div><div class="tk-badge">Supervision</div></div>
+          <div class="t-panel" id="tp-l2t3"><div class="tp-head"><div class="tp-title">Task 3: Review Junior Auditor Workpaper</div><button class="btn-close" onclick="closePanel('l2t3')">✕ Close</button></div><div class="inst-block"><h4>Background</h4><p>Aisha Nwosu is a first-year IT Audit Associate reporting to you. She has submitted her first draft workpaper for the IAM Role Review. It contains 5 intentional errors that you must identify and document using professional reviewer language.</p></div><div class="inst-block"><h4>Your Instructions</h4><p>Open Aisha's workpaper. Find and document all 5 errors. For each error: cite the specific issue, explain why it is incorrect or deficient, and write your review note as you would in a real audit file. Be constructive and specific — not just "this is wrong." Good reviewers educate, not just criticize.</p></div><div class="art-grid"><div class="art-card" onclick="openMod('m-juniorwp')"><div class="art-icon">🔍</div><div><div class="art-name">Aisha's Draft Workpaper</div><div class="art-type">IAM Role Review · 5 Errors</div></div></div></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l2t3')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l2t4" onclick="togglePanel('l2t4')"><div class="chk" id="ck-l2t4"></div><div style="flex:1"><div class="tk-title">4. Stakeholder Meeting — Draft Follow-Up Email</div><div class="tk-desc">After reviewing the CISO and Cloud Engineer meeting agenda, draft the professional follow-up email with action items, owners, and deadlines.</div></div><div class="tk-badge">Stakeholder Mgmt</div></div>
+          <div class="t-panel" id="tp-l2t4"><div class="tp-head"><div class="tp-title">Task 4: Draft Stakeholder Meeting Follow-Up Email</div><button class="btn-close" onclick="closePanel('l2t4')">✕ Close</button></div><div class="inst-block"><h4>Your Instructions</h4><p>You met with Priya Chandrasekaran (CISO) and James Liu (Cloud Engineer) to discuss audit scope and evidence requests. The meeting agenda and notes are in the artifact below. Draft a formal follow-up email to both stakeholders that: thanks them for their time, summarizes key discussion points, lists all action items with owners and due dates, and sets the next check-in date.</p></div><div class="art-grid"><div class="art-card" onclick="openMod('m-meetagenda')"><div class="art-icon">📅</div><div><div class="art-name">Meeting Agenda &amp; Notes</div><div class="art-type">CISO + Cloud Engineer</div></div></div></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l2t4')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l2t5" onclick="togglePanel('l2t5')"><div class="chk" id="ck-l2t5"></div><div style="flex:1"><div class="tk-title">5. Write 3 Audit Findings (High, Medium, Low)</div><div class="tk-desc">Based on fieldwork results, draft 3 complete findings — one per severity rating — each with Criteria, Condition, Cause, Effect, and Recommendation.</div></div><div class="tk-badge">Findings</div></div>
+          <div class="t-panel" id="tp-l2t5"><div class="tp-head"><div class="tp-title">Task 5: Write 3 Audit Findings</div><button class="btn-close" onclick="closePanel('l2t5')">✕ Close</button></div><div class="inst-block"><h4>Fieldwork Results — Your Basis for Findings</h4><p><strong>Finding 1 (High):</strong> 23 privileged AWS IAM roles have not been reviewed in over 365 days. 4 of those roles belong to terminated employees who left between 3 and 11 months ago.<br><br><strong>Finding 2 (Medium):</strong> CloudTrail logging is disabled in 2 of the 6 AWS regions actively used by NovaBridge (ap-southeast-1 and ap-southeast-2).<br><br><strong>Finding 3 (Low):</strong> S3 bucket versioning is not enabled on 3 non-production buckets that contain sanitized test data.</p></div><div class="art-grid"><div class="art-card" onclick="openMod('m-findtempl')"><div class="art-icon">📝</div><div><div class="art-name">Finding Template</div><div class="art-type">5Cs Structure</div></div></div></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l2t5')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l2t6" onclick="togglePanel('l2t6')"><div class="chk" id="ck-l2t6"></div><div style="flex:1"><div class="tk-title">6. Build Management Action Plan (MAP) Tracker</div><div class="tk-desc">For each of the 3 findings, document management's agreed remediation actions, responsible parties, and target completion dates in the MAP tracker.</div></div><div class="tk-badge">Remediation</div></div>
+          <div class="t-panel" id="tp-l2t6"><div class="tp-head"><div class="tp-title">Task 6: Build MAP Tracker</div><button class="btn-close" onclick="closePanel('l2t6')">✕ Close</button></div><div class="inst-block"><h4>Your Instructions</h4><p>Management has verbally agreed to remediate all 3 findings. Using the MAP tracker template, document: finding reference, management response statement, responsible owner (from HR Roster), target completion date, and status. The High finding target must be within 30 days. Medium within 60 days. Low within 90 days.</p></div><div class="art-grid"><div class="art-card" onclick="openMod('m-maptrack')"><div class="art-icon">📌</div><div><div class="art-name">MAP Tracker Template</div><div class="art-type">Management Action Plan</div></div></div></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l2t6')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l2t7" onclick="togglePanel('l2t7')"><div class="chk" id="ck-l2t7"></div><div style="flex:1"><div class="tk-title">7. Scope Change Justification Memo</div><div class="tk-desc">Mid-audit, an unreviewed AWS S3 bucket containing sensitive PII is discovered. Write a memo to the Audit Manager justifying the scope expansion.</div></div><div class="tk-badge">Judgment</div></div>
+          <div class="t-panel" id="tp-l2t7"><div class="tp-head"><div class="tp-title">Task 7: Scope Change Justification Memo</div><button class="btn-close" onclick="closePanel('l2t7')">✕ Close</button></div><div class="inst-block"><h4>Situation</h4><p>During testing, James Liu mentioned there are 3 additional AWS S3 buckets in the us-west-2 region that were not included in the original scope. These buckets contain customer PII and have no documented access controls. This represents a significant risk that must be examined.</p></div><div class="inst-block"><h4>Your Instructions</h4><p>Write a formal scope change memo to Audit Manager Jonathan Ferreira requesting approval to expand scope. Include: how and when the discovery was made, the risk justification (why this must be audited), estimated additional hours required (be specific), impact on timeline, and your recommendation.</p></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l2t7')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l2t8" onclick="togglePanel('l2t8')"><div class="chk" id="ck-l2t8"></div><div style="flex:1"><div class="tk-title">8. Prepare Status Update — Talking Points &amp; Slide Outline</div><div class="tk-desc">Prepare a verbal status update for the Audit Manager. Write talking points and draft a 4-slide status deck covering progress, findings, risks, and next steps.</div></div><div class="tk-badge">Communication</div></div>
+          <div class="t-panel" id="tp-l2t8"><div class="tp-head"><div class="tp-title">Task 8: Status Update</div><button class="btn-close" onclick="closePanel('l2t8')">✕ Close</button></div><div class="inst-block"><h4>Your Instructions</h4><p>Prepare talking points and a 4-slide deck outline for Audit Manager Jonathan Ferreira:<br><br><strong>Slide 1:</strong> Progress Dashboard — % complete by workstream, hours used vs. budget<br><strong>Slide 2:</strong> Findings Summary — count by severity, top 2 findings headline<br><strong>Slide 3:</strong> Emerging Risks — scope change discovered, impact assessment<br><strong>Slide 4:</strong> Next 2 Weeks — milestones, outstanding evidence requests, decisions needed</p></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l2t8',true,'l2','Level 2 — Senior IT Auditor')">✓ Complete Level 2</button></div></div>
+        </div>
+      </div>
+
+      <!-- LEVEL 3 -->
+      <div class="view" id="v-l3">
+        <div class="lv-header">
+          <div class="lv-num">03</div>
+          <div>
+            <div class="lv-eye">Level 3 · 12-Week Simulation</div>
+            <h2 class="lv-h1">IT Audit Manager</h2>
+            <p class="lv-scenario"><strong>Scenario:</strong> NovaBridge Integrated IT Audit covering Cybersecurity, IT Operations, and Business Continuity. You manage a team of 3 (2 staff, 1 senior) and are responsible for the full audit lifecycle — from planning through board reporting.</p>
+          </div>
+        </div>
+        <div id="l3-lock" class="locked-msg"><div class="lk-icon">🔒</div><h3>Level Locked</h3><p>Complete Level 2 to unlock the IT Audit Manager simulation.</p></div>
+        <div id="l3-open" style="display:none">
+          <div class="sec-head">Tasks</div>
+          <div class="task-row" id="tr-l3t1" onclick="togglePanel('l3t1')"><div class="chk" id="ck-l3t1"></div><div style="flex:1"><div class="tk-title">1. Draft Annual IT Audit Plan (Risk-Based)</div><div class="tk-desc">Develop NovaBridge's risk-based annual IT audit plan. Identify 6 audit engagements, prioritize by risk score, and allocate hours across your team for the fiscal year.</div></div><div class="tk-badge">Strategy</div></div>
+          <div class="t-panel" id="tp-l3t1"><div class="tp-head"><div class="tp-title">Task 1: Annual IT Audit Plan</div><button class="btn-close" onclick="closePanel('l3t1')">✕ Close</button></div><div class="inst-block"><h4>Your Instructions</h4><p>Develop a risk-based Annual IT Audit Plan for NovaBridge covering FY2025. Include: 6 planned audit engagements (identify topics based on NovaBridge's risk profile — digital transformation, OCC obligations, SOC 2), risk rating for each (High/Medium/Low), estimated hours, assigned team member(s), and planned quarter. Present as a formal plan document addressed to CAE Eleanor Voss.</p></div><div class="art-grid"><div class="art-card" onclick="openMod('m-auditplan')"><div class="art-icon">📅</div><div><div class="art-name">Annual Audit Plan Template</div><div class="art-type">FY2025 · Risk-Based</div></div></div></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l3t1')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l3t2" onclick="togglePanel('l3t2')"><div class="chk" id="ck-l3t2"></div><div style="flex:1"><div class="tk-title">2. Assign Audit Areas — Team Delegation Memos</div><div class="tk-desc">Write formal delegation memos to each of your 3 team members assigning their audit areas, responsibilities, deliverables, and performance expectations.</div></div><div class="tk-badge">Leadership</div></div>
+          <div class="t-panel" id="tp-l3t2"><div class="tp-head"><div class="tp-title">Task 2: Team Delegation Memos</div><button class="btn-close" onclick="closePanel('l3t2')">✕ Close</button></div><div class="inst-block"><h4>Your Instructions</h4><p>Write 3 delegation memos — one for each direct report: Marcus Webb (Senior IT Auditor), Aisha Nwosu (IT Auditor), and Carlos Mendez (IT Auditor). Each memo should include: assigned audit area, specific responsibilities, expected deliverables and due dates, quality standards, and how you will monitor their progress.</p></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l3t2')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l3t3" onclick="togglePanel('l3t3')"><div class="chk" id="ck-l3t3"></div><div style="flex:1"><div class="tk-title">3. Escalate a Finding to Critical</div><div class="tk-desc">A Senior Auditor drafted a High finding, but new evidence shows it should be Critical. Review, rewrite the finding, and draft the escalation memo to the CAE.</div></div><div class="tk-badge">Judgment</div></div>
+          <div class="t-panel" id="tp-l3t3"><div class="tp-head"><div class="tp-title">Task 3: Escalate Finding to Critical</div><button class="btn-close" onclick="closePanel('l3t3')">✕ Close</button></div><div class="inst-block"><h4>Situation</h4><p>Marcus Webb drafted a High finding regarding unpatched servers. New evidence from the SOC team shows that one of the unpatched servers was actively exploited in a penetration test last quarter — a fact management had not disclosed. This materially changes the risk profile.</p></div><div class="inst-block"><h4>Your Instructions</h4><p>1. Rewrite the finding as Critical — update the Condition, Effect, and Recommendation to reflect the severity.<br>2. Draft an escalation memo to CAE Eleanor Voss explaining the situation, why you are escalating, and what immediate management action you recommend.</p></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l3t3')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l3t4" onclick="togglePanel('l3t4')"><div class="chk" id="ck-l3t4"></div><div style="flex:1"><div class="tk-title">4. Manage Difficult Auditee — Email De-escalation</div><div class="tk-desc">The Head of IT Operations is pushing back hard on a High finding and threatening to escalate to the CFO. Draft an email that de-escalates professionally while holding firm.</div></div><div class="tk-badge">Stakeholder</div></div>
+          <div class="t-panel" id="tp-l3t4"><div class="tp-head"><div class="tp-title">Task 4: Manage Difficult Auditee</div><button class="btn-close" onclick="closePanel('l3t4')">✕ Close</button></div><div class="inst-block"><h4>Email Received from Sandra Poole, Head of IT Operations</h4><p><em>"I strongly disagree with this finding. The controls you cited are documented in our runbook and my team follows them daily. I believe your auditors misunderstood our process. If this finding is not removed from the report, I will be raising this directly with the CFO and requesting an external review of your methodology. This is not the first time Internal Audit has created unnecessary alarm."</em></p></div><div class="inst-block"><h4>Your Instructions</h4><p>Draft a professional email response to Sandra that: acknowledges her concern respectfully, explains the factual basis for the finding without backing down, proposes a constructive path forward (e.g., a meeting to review the evidence), and maintains the integrity of the audit. Do not be dismissive, do not be a pushover.</p></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l3t4')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l3t5" onclick="togglePanel('l3t5')"><div class="chk" id="ck-l3t5"></div><div style="flex:1"><div class="tk-title">5. Present Draft Report — Executive Talking Points</div><div class="tk-desc">Prepare executive-level talking points for presenting the draft audit report to CFO Deborah Kim and CISO Priya Chandrasekaran. Include anticipated objections and your responses.</div></div><div class="tk-badge">Executive Comms</div></div>
+          <div class="t-panel" id="tp-l3t5"><div class="tp-head"><div class="tp-title">Task 5: Executive Presentation Talking Points</div><button class="btn-close" onclick="closePanel('l3t5')">✕ Close</button></div><div class="inst-block"><h4>Your Instructions</h4><p>Prepare structured talking points for a 20-minute draft report presentation to the CFO and CISO. Include: opening summary (30 seconds), findings overview by severity, top 3 findings with business impact framing (not just technical), management response status, remediation timeline summary, and your closing ask (what you need from them). Also prepare 3 anticipated objections and your planned responses.</p></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l3t5')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l3t6" onclick="togglePanel('l3t6')"><div class="chk" id="ck-l3t6"></div><div style="flex:1"><div class="tk-title">6. Quality Assurance Review of Audit File</div><div class="tk-desc">Perform a QA review of the completed audit file. Using the QA checklist, identify and document 5 issues including workpaper gaps, finding deficiencies, and documentation errors.</div></div><div class="tk-badge">QA</div></div>
+          <div class="t-panel" id="tp-l3t6"><div class="tp-head"><div class="tp-title">Task 6: Quality Assurance Review</div><button class="btn-close" onclick="closePanel('l3t6')">✕ Close</button></div><div class="inst-block"><h4>Your Instructions</h4><p>Using the QA checklist below, perform a review of the completed audit file. Identify 5 issues (they are embedded in the file descriptions). Document each issue with: the specific QA criterion failed, a description of the deficiency found, and the required corrective action before the file can be approved for report issuance.</p></div><div class="art-grid"><div class="art-card" onclick="openMod('m-qachk')"><div class="art-icon">✅</div><div><div class="art-name">QA Checklist</div><div class="art-type">With Embedded Issues</div></div></div></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l3t6')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l3t7" onclick="togglePanel('l3t7')"><div class="chk" id="ck-l3t7"></div><div style="flex:1"><div class="tk-title">7. Draft Final IT Audit Report</div><div class="tk-desc">Write the complete final audit report — executive summary (1 page) plus detailed findings section with ratings, management responses, and remediation timeline.</div></div><div class="tk-badge">Reporting</div></div>
+          <div class="t-panel" id="tp-l3t7"><div class="tp-head"><div class="tp-title">Task 7: Final IT Audit Report</div><button class="btn-close" onclick="closePanel('l3t7')">✕ Close</button></div><div class="inst-block"><h4>Your Instructions</h4><p>Draft the complete Final IT Audit Report for the NovaBridge Integrated IT Audit. Include:<br><br><strong>Section 1 — Executive Summary (1 page):</strong> Engagement overview, overall assessment rating, key themes, summary of findings by severity<br><br><strong>Section 2 — Detailed Findings:</strong> All findings with full 5Cs structure, management responses, remediation due dates<br><br><strong>Section 3 — Management Action Plan Summary:</strong> Table of all open items with owners and dates</p></div><div class="art-grid"><div class="art-card" onclick="openMod('m-rpttempl')"><div class="art-icon">📑</div><div><div class="art-name">Final Report Template</div><div class="art-type">Executive Summary + Findings</div></div></div></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l3t7')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l3t8" onclick="togglePanel('l3t8')"><div class="chk" id="ck-l3t8"></div><div style="flex:1"><div class="tk-title">8. Data Breach Mid-Audit — Urgent Memo to CAE</div><div class="tk-desc">A data breach is reported mid-audit. As Audit Manager, pivot the audit, assess implications, and draft an urgent memo to the Chief Audit Executive within 2 hours.</div></div><div class="tk-badge">Crisis</div></div>
+          <div class="t-panel" id="tp-l3t8"><div class="tp-head"><div class="tp-title">Task 8: Data Breach — Urgent Memo to CAE</div><button class="btn-close" onclick="closePanel('l3t8')">✕ Close</button></div><div class="inst-block"><h4>Breaking Situation</h4><p>At 9:42 AM on a Tuesday in Week 8 of your audit, NovaBridge's CISO Priya Chandrasekaran calls you. A suspected data breach has been detected — unauthorized access to an AWS S3 bucket containing 14,000 customer records. The incident is active. The SOC team and external IR firm have been engaged. The OCC has been notified by Legal.</p></div><div class="inst-block"><h4>Your Instructions</h4><p>Draft an urgent memo to CAE Eleanor Voss within 2 hours. Address: what happened and when you were notified, how this affects your current audit (scope, findings, timeline), your immediate recommended actions (pause? pivot? accelerate?), any independence considerations, and what you need the CAE to decide right now.</p></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l3t8')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l3t9" onclick="togglePanel('l3t9')"><div class="chk" id="ck-l3t9"></div><div style="flex:1"><div class="tk-title">9. Complete Performance Review — Direct Report</div><div class="tk-desc">Complete the annual performance review for Senior IT Auditor Marcus Webb. Evaluate his performance across 8 competencies and set development goals.</div></div><div class="tk-badge">People Mgmt</div></div>
+          <div class="t-panel" id="tp-l3t9"><div class="tp-head"><div class="tp-title">Task 9: Performance Review — Marcus Webb</div><button class="btn-close" onclick="closePanel('l3t9')">✕ Close</button></div><div class="inst-block"><h4>Performance Context — Marcus Webb FY2024</h4><p>Strengths observed: Thorough workpaper documentation, excellent stakeholder relationships, strong technical cloud knowledge (passed AWS Solutions Architect exam). Areas for development: Tends to over-document low-risk items at the expense of higher-risk areas; finding write-ups sometimes lack clear business impact language; needs to improve delegation to junior staff.</p></div><div class="inst-block"><h4>Your Instructions</h4><p>Using the performance review template (HR Roster section), complete Marcus's annual review. Provide specific, behavioral examples for each rating. Set 3 SMART development goals. Recommend his development path for FY2025.</p></div><div class="art-grid"><div class="art-card" onclick="openMod('m-perfrev')"><div class="art-icon">📈</div><div><div class="art-name">Performance Review Template</div><div class="art-type">Annual Review Form</div></div></div></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l3t9')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l3t10" onclick="togglePanel('l3t10')"><div class="chk" id="ck-l3t10"></div><div style="flex:1"><div class="tk-title">10. Build IT Audit Function KPI Dashboard</div><div class="tk-desc">Design a KPI dashboard for the IT audit function covering audit cycle time, finding rates, MAP closure %, team utilization, and training hours for Q1–Q3.</div></div><div class="tk-badge">Metrics</div></div>
+          <div class="t-panel" id="tp-l3t10"><div class="tp-head"><div class="tp-title">Task 10: KPI Dashboard</div><button class="btn-close" onclick="closePanel('l3t10')">✕ Close</button></div><div class="inst-block"><h4>Your Instructions</h4><p>Build a management KPI dashboard tracking these metrics for Q1, Q2, and Q3 FY2024:<br><br>• Average audit cycle time (days from fieldwork start to report issuance)<br>• Number of findings by severity (Critical/High/Medium/Low)<br>• MAP closure rate (%)<br>• Auditor utilization rate (% of capacity on billable audit work)<br>• CPE/training hours per auditor<br><br>Present in table format with a brief management commentary identifying 2–3 trends that require attention.</p></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l3t10',true,'l3','Level 3 — IT Audit Manager')">✓ Complete Level 3</button></div></div>
+        </div>
+      </div>
+
+      <!-- LEVEL 4 -->
+      <div class="view" id="v-l4">
+        <div class="lv-header">
+          <div class="lv-num">04</div>
+          <div>
+            <div class="lv-eye">Level 4 · 14-Week Simulation</div>
+            <h2 class="lv-h1">IT Audit Senior Manager</h2>
+            <p class="lv-scenario"><strong>Scenario:</strong> NovaBridge is preparing for an OCC regulatory examination and a concurrent SOX ITGC audit. You lead the entire IT audit function as Acting Senior Manager, reporting directly to the Chief Audit Executive and Audit Committee.</p>
+          </div>
+        </div>
+        <div id="l4-lock" class="locked-msg"><div class="lk-icon">🔒</div><h3>Level Locked</h3><p>Complete Level 3 to unlock the Senior Manager simulation.</p></div>
+        <div id="l4-open" style="display:none">
+          <div class="sec-head">Tasks</div>
+          <div class="task-row" id="tr-l4t1" onclick="togglePanel('l4t1')"><div class="chk" id="ck-l4t1"></div><div style="flex:1"><div class="tk-title">1. Build 3-Year IT Audit Strategic Roadmap</div><div class="tk-desc">Develop a 3-year strategic roadmap for NovaBridge's IT audit function aligned to the firm's digital transformation. Include maturity assessment, capability gaps, and year-by-year milestones.</div></div><div class="tk-badge">Strategy</div></div>
+          <div class="t-panel" id="tp-l4t1"><div class="tp-head"><div class="tp-title">Task 1: 3-Year Strategic Roadmap</div><button class="btn-close" onclick="closePanel('l4t1')">✕ Close</button></div><div class="inst-block"><h4>Your Instructions</h4><p>Develop a 3-year strategic roadmap (FY2025–FY2027) for NovaBridge's IT audit function. Include: current state maturity assessment (use a 1–5 scale across 6 capability areas), identified capability gaps, strategic objectives for each year, key initiatives and milestones, resource implications, and how the roadmap supports NovaBridge's broader digital transformation goals.</p></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l4t1')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l4t2" onclick="togglePanel('l4t2')"><div class="chk" id="ck-l4t2"></div><div style="flex:1"><div class="tk-title">2. Update Audit Methodology for Cloud &amp; AI Risk</div><div class="tk-desc">Revise NovaBridge's audit methodology to address cloud-native architecture and emerging AI system risks. Update 3 sections of the audit manual with specific guidance.</div></div><div class="tk-badge">Methodology</div></div>
+          <div class="t-panel" id="tp-l4t2"><div class="tp-head"><div class="tp-title">Task 2: Update Audit Methodology</div><button class="btn-close" onclick="closePanel('l4t2')">✕ Close</button></div><div class="inst-block"><h4>Your Instructions</h4><p>NovaBridge's audit manual was last updated in 2021 and does not address cloud-native or AI risks. Update 3 sections:<br><br><strong>Section A — Risk Assessment:</strong> Add cloud infrastructure and AI model risk to the risk universe definition<br><strong>Section B — Audit Program Development:</strong> Add guidance on using CSA CCM and NIST AI RMF as program frameworks<br><strong>Section C — Evidence Standards:</strong> Update to cover cloud-native evidence (API logs, config snapshots, SIEM exports)</p></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l4t2')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l4t3" onclick="togglePanel('l4t3')"><div class="chk" id="ck-l4t3"></div><div style="flex:1"><div class="tk-title">3. Brief the Audit Committee — Board Memo &amp; Presentation</div><div class="tk-desc">Prepare a board-level memo and 5-slide presentation for the Audit Committee covering IT audit results, key risks, regulatory posture, and the 3-year roadmap.</div></div><div class="tk-badge">Board Comms</div></div>
+          <div class="t-panel" id="tp-l4t3"><div class="tp-head"><div class="tp-title">Task 3: Audit Committee Brief</div><button class="btn-close" onclick="closePanel('l4t3')">✕ Close</button></div><div class="inst-block"><h4>Your Instructions</h4><p>Prepare a formal board memo (max 2 pages) and 5-slide presentation deck outline for Audit Committee Chair Dr. Shirley Watkins. The memo must be written for a non-technical executive audience. Slides: (1) IT Audit Year-in-Review, (2) Top IT Risks to NovaBridge, (3) Regulatory Posture — OCC &amp; SOC 2 Status, (4) 3-Year Strategic Roadmap Summary, (5) Requests and Decisions for Audit Committee.</p></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l4t3')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l4t4" onclick="togglePanel('l4t4')"><div class="chk" id="ck-l4t4"></div><div style="flex:1"><div class="tk-title">4. OCC Exam Readiness — Response Letter &amp; Evidence Coordination</div><div class="tk-desc">Draft the formal readiness response letter to OCC examiners. Coordinate evidence items, assign owners, and establish an evidence request log.</div></div><div class="tk-badge">Regulatory</div></div>
+          <div class="t-panel" id="tp-l4t4"><div class="tp-head"><div class="tp-title">Task 4: OCC Exam Readiness</div><button class="btn-close" onclick="closePanel('l4t4')">✕ Close</button></div><div class="inst-block"><h4>Your Instructions</h4><p>1. Draft a formal OCC readiness response letter from CAE Eleanor Voss to the OCC Examiner-in-Charge, confirming NovaBridge's readiness and point-of-contact for the examination.<br><br>2. Create an evidence request log covering: access management policies, change management records, ITGC testing results, SOC 2 reports, incident response logs, and prior audit findings. Assign each item to an owner from the HR Roster with a due date.</p></div><div class="art-grid"><div class="art-card" onclick="openMod('m-occlog')"><div class="art-icon">🏛️</div><div><div class="art-name">OCC Evidence Request Log</div><div class="art-type">Template · Assign Owners</div></div></div></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l4t4')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l4t5" onclick="togglePanel('l4t5')"><div class="chk" id="ck-l4t5"></div><div style="flex:1"><div class="tk-title">5. SOX ITGC Scoping Exercise</div><div class="tk-desc">Identify all in-scope IT systems for SOX ITGC testing. Map each system to relevant financial statement assertions and risks. Determine the testing approach for each.</div></div><div class="tk-badge">SOX</div></div>
+          <div class="t-panel" id="tp-l4t5"><div class="tp-head"><div class="tp-title">Task 5: SOX ITGC Scoping</div><button class="btn-close" onclick="closePanel('l4t5')">✕ Close</button></div><div class="inst-block"><h4>Your Instructions</h4><p>Conduct the SOX ITGC scoping exercise for NovaBridge. NovaBridge's key systems: FiServe (core banking), Salesforce (CRM), Microsoft 365 (productivity), AWS (infrastructure), Workday (HR/payroll), ServiceNow (ticketing). For each system: determine SOX in-scope (Yes/No) with rationale, map to COSO principles and relevant financial assertions, identify ITGC domains to test (Access, Change, Operations, DR), and assign testing lead.</p></div><div class="art-grid"><div class="art-card" onclick="openMod('m-soxscope')"><div class="art-icon">📋</div><div><div class="art-name">SOX ITGC Scoping Matrix</div><div class="art-type">Complete &amp; Submit</div></div></div></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l4t5')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l4t6" onclick="togglePanel('l4t6')"><div class="chk" id="ck-l4t6"></div><div style="flex:1"><div class="tk-title">6. Develop &amp; Present IT Audit Function Budget ($2.4M)</div><div class="tk-desc">Build the annual budget for the IT audit function. Justify headcount, training, tools, and travel. Present to the CAE with variance analysis vs. prior year.</div></div><div class="tk-badge">Finance</div></div>
+          <div class="t-panel" id="tp-l4t6"><div class="tp-head"><div class="tp-title">Task 6: IT Audit Function Budget</div><button class="btn-close" onclick="closePanel('l4t6')">✕ Close</button></div><div class="inst-block"><h4>Your Instructions</h4><p>Build the FY2025 IT Audit budget totaling approximately $2.4M. Allocate across: personnel costs (salaries + benefits for 10 staff), professional development and certifications, audit management software and tools, travel and accommodation (for on-site fieldwork), external co-sourcing (for specialist skills — cloud, AI), contingency reserve. Include a prior year variance analysis explaining any increases over $50K.</p></div><div class="art-grid"><div class="art-card" onclick="openMod('m-budget')"><div class="art-icon">💰</div><div><div class="art-name">Budget Template</div><div class="art-type">$2.4M · FY2025</div></div></div></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l4t6')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l4t7" onclick="togglePanel('l4t7')"><div class="chk" id="ck-l4t7"></div><div style="flex:1"><div class="tk-title">7. Design Team Training Curriculum (3-Level Development Plan)</div><div class="tk-desc">Create a structured development curriculum for IT Auditor, Senior IT Auditor, and Manager levels. Include technical skills, certifications, soft skills, and 12-month milestones.</div></div><div class="tk-badge">L&amp;D</div></div>
+          <div class="t-panel" id="tp-l4t7"><div class="tp-head"><div class="tp-title">Task 7: Team Training Curriculum</div><button class="btn-close" onclick="closePanel('l4t7')">✕ Close</button></div><div class="inst-block"><h4>Your Instructions</h4><p>Design a 12-month training curriculum for each level: IT Auditor (Aisha, Carlos, Priyanka), Senior IT Auditor (Marcus, Fatima), IT Audit Manager (Jonathan). For each level specify: required certifications and timeline, technical skills modules (cloud, AI, data analytics), soft skills training (communication, stakeholder management, leadership), internal mentoring program structure, and Q1–Q4 milestone checkpoints.</p></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l4t7')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l4t8" onclick="togglePanel('l4t8')"><div class="chk" id="ck-l4t8"></div><div style="flex:1"><div class="tk-title">8. Handle Ethics/Independence Issue — CAE Escalation</div><div class="tk-desc">A team member has disclosed a financial interest in a vendor being audited. Draft the formal escalation memo to the CAE following independence protocols.</div></div><div class="tk-badge">Ethics</div></div>
+          <div class="t-panel" id="tp-l4t8"><div class="tp-head"><div class="tp-title">Task 8: Ethics &amp; Independence Issue</div><button class="btn-close" onclick="closePanel('l4t8')">✕ Close</button></div><div class="inst-block"><h4>Situation</h4><p>Senior IT Auditor Fatima Al-Rashid has disclosed to you that she purchased 150 shares of PayBridge LLC — the third-party payment processor currently being audited in Level 2 — 6 weeks ago, before that audit was assigned to her team. She was unaware of the conflict at the time of purchase. She disclosed immediately upon realizing the issue today.</p></div><div class="inst-block"><h4>Your Instructions</h4><p>Draft a formal escalation memo to CAE Eleanor Voss covering: the nature of the independence impairment, timeline of events, Fatima's disclosure circumstances (relevant to intent and good faith), your assessment of the severity, recommended immediate actions (remove from engagement? disclose in report?), and long-term safeguards to prevent recurrence.</p></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l4t8')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l4t9" onclick="togglePanel('l4t9')"><div class="chk" id="ck-l4t9"></div><div style="flex:1"><div class="tk-title">9. Lead Lessons-Learned Session — Facilitation Guide</div><div class="tk-desc">Facilitate a post-audit lessons-learned session following the OCC examination. Write the facilitation guide including objectives, discussion questions, and action item capture process.</div></div><div class="tk-badge">Continuous Improvement</div></div>
+          <div class="t-panel" id="tp-l4t9"><div class="tp-head"><div class="tp-title">Task 9: Lessons-Learned Facilitation Guide</div><button class="btn-close" onclick="closePanel('l4t9')">✕ Close</button></div><div class="inst-block"><h4>Your Instructions</h4><p>Write a facilitation guide for a 90-minute lessons-learned session following the OCC examination. Include: session objectives, pre-session preparation instructions for attendees, agenda with timing, 10–12 structured discussion questions across 4 themes (what went well / what didn't / what surprised us / what we'd do differently), ground rules, action item capture template, and how findings from this session will be incorporated into next year's audit planning.</p></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l4t9')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l4t10" onclick="togglePanel('l4t10')"><div class="chk" id="ck-l4t10"></div><div style="flex:1"><div class="tk-title">10. Create IT Audit Balanced Scorecard</div><div class="tk-desc">Design a balanced scorecard for the IT audit function across 4 perspectives: Financial, Stakeholder, Internal Process, and Learning &amp; Growth. Define 3 KPIs per perspective.</div></div><div class="tk-badge">Performance</div></div>
+          <div class="t-panel" id="tp-l4t10"><div class="tp-head"><div class="tp-title">Task 10: Balanced Scorecard</div><button class="btn-close" onclick="closePanel('l4t10')">✕ Close</button></div><div class="inst-block"><h4>Your Instructions</h4><p>Design a balanced scorecard for the NovaBridge IT Audit function using the Kaplan-Norton 4-perspective framework. For each perspective, define 3 KPIs with: metric name, definition, measurement method, target, and current baseline. Perspectives: Financial (cost efficiency, budget variance, cost per audit hour), Stakeholder (auditee satisfaction, finding acceptance rate, executive engagement), Internal Process (audit cycle time, MAP closure rate, workpaper quality score), Learning &amp; Growth (certifications earned, training hours, staff retention).</p></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l4t10')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l4t11" onclick="togglePanel('l4t11')"><div class="chk" id="ck-l4t11"></div><div style="flex:1"><div class="tk-title">11. Draft Thought Leadership Memo: AI Risk in Financial Services</div><div class="tk-desc">Write a strategic thought leadership memo to the CAE on "AI Risk in Financial Services: Implications for IT Audit." Address emerging risks, audit approach, and the regulatory landscape.</div></div><div class="tk-badge">Thought Leadership</div></div>
+          <div class="t-panel" id="tp-l4t11"><div class="tp-head"><div class="tp-title">Task 11: AI Risk Thought Leadership Memo</div><button class="btn-close" onclick="closePanel('l4t11')">✕ Close</button></div><div class="inst-block"><h4>Your Instructions</h4><p>Write a 2-page strategic memo to CAE Eleanor Voss on "AI Risk in Financial Services: Implications for IT Audit at NovaBridge." Cover: the AI risk landscape in financial services (model risk, algorithmic bias, data integrity, explainability), how NovaBridge is currently using or planning to use AI, the audit implications (what new controls must be tested), regulatory signals (OCC guidance, SR 11-7 model risk management), your recommended approach to building an AI audit capability, and 3 specific actions you recommend NovaBridge take in the next 12 months.</p></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l4t11')">✓ Mark Complete</button></div></div>
+
+          <div class="task-row" id="tr-l4t12" onclick="togglePanel('l4t12')"><div class="chk" id="ck-l4t12"></div><div style="flex:1"><div class="tk-title">12. Present Annual IT Audit Report to Board Audit Committee</div><div class="tk-desc">Deliver the year-end Annual IT Audit Report to the Board Audit Committee. Prepare the full written report and a 5-slide executive presentation deck. This is your capstone.</div></div><div class="tk-badge">Board Reporting</div></div>
+          <div class="t-panel" id="tp-l4t12"><div class="tp-head"><div class="tp-title">Task 12: Annual Board Report — Capstone</div><button class="btn-close" onclick="closePanel('l4t12')">✕ Close</button></div><div class="inst-block"><h4>Your Instructions — Capstone Deliverable</h4><p>Prepare the Final Annual IT Audit Report for the Board Audit Committee. Include: Executive Summary (overall IT risk assessment), Audit Coverage vs. Plan (what was completed vs. planned, and why any deviations), Key Themes &amp; Systemic Risks identified across all audits, Regulatory Update (OCC examination findings and response status), MAP Status (open items from all FY2024 audits), IT Audit Function Performance (KPIs vs. targets), and Outlook for FY2025 (top priorities).<br><br>Also prepare a 5-slide executive presentation deck outline for Dr. Shirley Watkins and the Board.</p></div><div class="t-submit"><button class="btn-complete" onclick="completeTask('l4t12',true,'l4','Level 4 — IT Audit Senior Manager')">🎓 Complete Program</button></div></div>
+        </div>
+      </div>
+
+      <!-- HR ROSTER -->
+      <div class="view" id="v-hr">
+        <div style="margin-bottom:2rem">
+          <div class="d-greeting">NovaBridge Financial Services</div>
+          <h1 class="d-title" style="font-size:2rem">HR Staff <em>Directory</em></h1>
+          <p class="d-sub">Internal Audit Department &amp; Key Stakeholders</p>
+        </div>
+        <div class="sec-head">IT Audit Department</div>
+        <table class="roster-tbl">
+          <thead><tr><th>Name</th><th>Title</th><th>Email</th><th>EMP ID</th><th>Hire Date</th><th>Certifications</th></tr></thead>
+          <tbody>
+            <tr><td><div class="emp-name">Eleanor Voss</div></td><td>Chief Audit Executive (CAE)</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="fc99d28a938f8fbc92938a9d9e8e95989b99d29f9391">[email&#160;protected]</a></td><td>NB-001</td><td>Mar 2018</td><td><span class="cert">CIA</span><span class="cert">CISA</span><span class="cert">CPA</span></td></tr>
+            <tr><td><div class="emp-name">Reginald Ashford</div></td><td>Deputy CAE, IT Audit</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f486da95879c929b8690b49a9b829596869d909391da979b99">[email&#160;protected]</a></td><td>NB-002</td><td>Jun 2019</td><td><span class="cert">CISA</span><span class="cert">CRISC</span><span class="cert">CISSP</span></td></tr>
+            <tr><td><div class="emp-name">Tamara Osei</div></td><td>IT Audit Senior Manager</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="70045e1f031519301e1f06111202191417155e131f1d">[email&#160;protected]</a></td><td>NB-007</td><td>Jan 2020</td><td><span class="cert">CISA</span><span class="cert">CRISC</span></td></tr>
+            <tr><td><div class="emp-name">Jonathan Ferreira</div></td><td>IT Audit Manager</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e68cc880839494838f9487a68889908784948f828183c885898b">[email&#160;protected]</a></td><td>NB-012</td><td>Aug 2020</td><td><span class="cert">CISA</span><span class="cert">CIA</span></td></tr>
+            <tr><td><div class="emp-name">Marcus Webb</div></td><td>Senior IT Auditor</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="335e1d44565151735d5c455251415a5754561d505c5e">[email&#160;protected]</a></td><td>NB-018</td><td>Feb 2021</td><td><span class="cert">CISA</span><span class="cert">CISM</span></td></tr>
+            <tr><td><div class="emp-name">Fatima Al-Rashid</div></td><td>Senior IT Auditor</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5d3b733c312f3c2e3534391d33322b3c3f2f34393a38733e3230">[email&#160;protected]</a></td><td>NB-019</td><td>May 2021</td><td><span class="cert">CISA</span><span class="cert">CRISC</span></td></tr>
+            <tr><td><div class="emp-name">Aisha Nwosu</div></td><td>IT Auditor</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b4d59adac3dbc7c1f4dadbc2d5d6c6ddd0d3d19ad7dbd9">[email&#160;protected]</a></td><td>NB-025</td><td>Sep 2022</td><td><span class="cert">CISA (In Progress)</span></td></tr>
+            <tr><td><div class="emp-name">Carlos Mendez</div></td><td>IT Auditor</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="51327f3c343f35342b113f3e27303323383536347f323e3c">[email&#160;protected]</a></td><td>NB-026</td><td>Oct 2022</td><td><span class="cert">Security+</span></td></tr>
+            <tr><td><div class="emp-name">Priyanka Sharma</div></td><td>IT Auditor</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="4939673a21283b24280927263f282b3b202d2e2c672a2624">[email&#160;protected]</a></td><td>NB-027</td><td>Jan 2023</td><td><span class="cert">CISA (In Progress)</span></td></tr>
+            <tr><td><div class="emp-name">Thomas Wycliffe</div></td><td>IT Audit Coordinator</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="0a7e247d736966636c6c6f4a64657c6b6878636e6d6f24696567">[email&#160;protected]</a></td><td>NB-030</td><td>Mar 2023</td><td>—</td></tr>
+          </tbody>
+        </table>
+        <div class="sec-head" style="margin-top:2rem">Business &amp; IT Stakeholders</div>
+        <table class="roster-tbl">
+          <thead><tr><th>Name</th><th>Title</th><th>Email</th><th>Department</th></tr></thead>
+          <tbody>
+            <tr><td><div class="emp-name">Deborah Kim</div></td><td>Chief Financial Officer (CFO)</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="3753195c5e5a775958415655455e5350521954585a">[email&#160;protected]</a></td><td>Finance</td></tr>
+            <tr><td><div class="emp-name">Priya Chandrasekaran</div></td><td>Chief Information Security Officer</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="c0b0eea3a8a1aea4b2a1b3a5aba1b2a1ae80aeafb6a1a2b2a9a4a7a5eea3afad">[email&#160;protected]</a></td><td>Security</td></tr>
+            <tr><td><div class="emp-name">Raymond Clarke</div></td><td>Chief Information Officer (CIO)</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="54267a373835263f31143a3b223536263d3033317a373b39">[email&#160;protected]</a></td><td>Technology</td></tr>
+            <tr><td><div class="emp-name">Derek Okafor</div></td><td>IT Manager — Infrastructure</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="dbbff5b4b0babdb4a99bb5b4adbab9a9b2bfbcbef5b8b4b6">[email&#160;protected]</a></td><td>Technology</td></tr>
+            <tr><td><div class="emp-name">James Liu</div></td><td>Cloud Engineer — AWS</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="375d195b5e42775958415655455e5350521954585a">[email&#160;protected]</a></td><td>Technology</td></tr>
+            <tr><td><div class="emp-name">Sandra Poole</div></td><td>Head of IT Operations</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="61124f110e0e0d04210f0e17000313080506044f020e0c">[email&#160;protected]</a></td><td>Technology</td></tr>
+            <tr><td><div class="emp-name">Victor Mensah</div></td><td>Compliance Officer</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f88ed6959d968b9990b896978e999a8a919c9f9dd69b9795">[email&#160;protected]</a></td><td>Compliance</td></tr>
+            <tr><td><div class="emp-name">Angela Torres</div></td><td>Data Privacy Lead</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="94f5bae0fbe6e6f1e7d4fafbe2f5f6e6fdf0f3f1baf7fbf9">[email&#160;protected]</a></td><td>Legal</td></tr>
+            <tr><td><div class="emp-name">Patricia Hollis</div></td><td>HR Director</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="3a4a145255565653497a54554c5b5848535e5d5f14595557">[email&#160;protected]</a></td><td>Human Resources</td></tr>
+            <tr><td><div class="emp-name">Grant Whitmore</div></td><td>External Audit Partner (PwC)</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="3e59104956574a53514c5b7e4e495d105d5153">[email&#160;protected]</a></td><td>External</td></tr>
+            <tr><td><div class="emp-name">Dr. Shirley Watkins</div></td><td>Audit Committee Chair (Board)</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="cebde0b9afbaa5a7a0bd8ea0a1b8afacbca7aaa9abe3aca1afbcaae0ada1a3">[email&#160;protected]</a></td><td>Board</td></tr>
+            <tr><td><div class="emp-name">OCC Examiner (Lead)</div></td><td>Examiner-in-Charge</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d1beb2b2fcbfbea7b0b3a3b8b5b6b491beb2b2ffa5a3b4b0a2ffb6bea7">[email&#160;protected]</a></td><td>OCC / Regulatory</td></tr>
+          </tbody>
+        </table>
+        <div class="sec-head" style="margin-top:2rem">HR Documents</div>
+        <div class="art-grid" style="grid-template-columns:1fr 1fr 1fr">
+          <div class="art-card" onclick="openMod('m-onboard')"><div class="art-icon">📬</div><div><div class="art-name">Onboarding Letter</div><div class="art-type">New Hire Document</div></div></div>
+          <div class="art-card" onclick="openMod('m-orgchart')"><div class="art-icon">🏢</div><div><div class="art-name">Org Chart</div><div class="art-type">Audit Dept Hierarchy</div></div></div>
+          <div class="art-card" onclick="openMod('m-coc')"><div class="art-icon">⚖️</div><div><div class="art-name">Code of Conduct</div><div class="art-type">Audit Dept Policy</div></div></div>
+          <div class="art-card" onclick="openMod('m-perfrev')"><div class="art-icon">📈</div><div><div class="art-name">Performance Review Template</div><div class="art-type">Annual Review Form</div></div></div>
+          <div class="art-card" onclick="openMod('m-certpol')"><div class="art-icon">🎓</div><div><div class="art-name">Certification Policy</div><div class="art-type">Training &amp; Development</div></div></div>
+          <div class="art-card" onclick="openMod('m-handbook')"><div class="art-icon">📚</div><div><div class="art-name">Employee Handbook Excerpt</div><div class="art-type">Audit Dept Policies</div></div></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MODAL OVERLAY -->
+<div class="overlay" id="overlay" onclick="overlayClick(event)">
+
+  <!-- AUDIT CHARTER -->
+  <div class="modal" id="m-charter"><div class="modal-hd"><div class="modal-title">Internal Audit Charter — NovaBridge Financial Services</div><button class="btn-close" onclick="closeMod('m-charter')">✕</button></div><div class="modal-body"><h3>1. Purpose &amp; Authority</h3><p>The Internal Audit Department (IAD) of NovaBridge Financial Services is established by authority of the Board of Directors and the Audit Committee. The IAD operates independently of management and has full, free, and unrestricted access to all functions, records, property, and personnel of NovaBridge.</p><h3>2. Mission</h3><p>To provide independent, objective assurance and consulting activity designed to add value and improve NovaBridge's operations, risk management, internal controls, and governance processes.</p><h3>3. Scope of IT Audit</h3><p>IT audit activities encompass: information security, access management, change management, IT general controls (ITGC), cloud infrastructure, third-party/vendor risk, business continuity and disaster recovery, data privacy, and regulatory compliance (SOC 2 Type II, SOX ITGC, OCC examination readiness).</p><h3>4. Independence &amp; Objectivity</h3><p>The Chief Audit Executive (CAE) reports functionally to the Audit Committee and administratively to the CEO. No IT auditor shall audit activities for which they have had management responsibility in the prior 12 months. All impairments to independence must be disclosed immediately to the CAE.</p><h3>5. Standards</h3><p>The IAD adheres to the IIA International Standards for the Professional Practice of Internal Auditing, ISACA CISA standards, and applicable regulatory guidance from the OCC and FFIEC.</p></div></div>
+
+  <!-- ENGAGEMENT LETTER -->
+  <div class="modal" id="m-engage"><div class="modal-hd"><div class="modal-title">SOC 2 Readiness Audit — Engagement Letter</div><button class="btn-close" onclick="closeMod('m-engage')">✕</button></div><div class="modal-body"><p><strong>Date:</strong> January 6, 2025 &nbsp;|&nbsp; <strong>To:</strong> Tamara Osei, IT Audit Senior Manager &nbsp;|&nbsp; <strong>From:</strong> Eleanor Voss, CAE</p><h3>Engagement Overview</h3><p>This letter confirms initiation of the SOC 2 Type II Readiness Audit for NovaBridge Financial Services, authorized under the 2025 Annual IT Audit Plan (Risk Priority: High).</p><h3>Trust Service Criteria In Scope</h3><p><strong>CC1</strong> — Control Environment &nbsp;|&nbsp; <strong>CC6</strong> — Logical &amp; Physical Access &nbsp;|&nbsp; <strong>CC7</strong> — System Operations &nbsp;|&nbsp; <strong>CC8</strong> — Change Management &nbsp;|&nbsp; <strong>A1</strong> — Availability</p><h3>Audit Period</h3><p>January 1, 2024 through December 31, 2024 (12-month period)</p><h3>Expected Deliverables</h3><p>1. Draft Audit Report with detailed findings &nbsp;|&nbsp; 2. Management Action Plan (MAP) Tracker &nbsp;|&nbsp; 3. Executive Summary for CFO and CISO &nbsp;|&nbsp; 4. SOC 2 Readiness Assessment Rating (Ready / Conditionally Ready / Not Ready)</p><h3>Engagement Team</h3><table class="doc-tbl"><tr><th>Name</th><th>Role</th><th>Responsibility</th></tr><tr><td>Tamara Osei</td><td>Senior Manager</td><td>Engagement oversight</td></tr><tr><td>Marcus Webb</td><td>Senior IT Auditor</td><td>Fieldwork supervision</td></tr><tr><td>Aisha Nwosu</td><td>IT Auditor</td><td>Access Management testing</td></tr><tr><td>Carlos Mendez</td><td>IT Auditor</td><td>Change Management testing</td></tr></table><p><strong>Estimated Hours:</strong> 320 &nbsp;|&nbsp; <strong>Fieldwork Start:</strong> January 20, 2025 &nbsp;|&nbsp; <strong>Report Due:</strong> March 28, 2025</p></div></div>
+
+  <!-- RACM -->
+  <div class="modal" id="m-racm"><div class="modal-hd"><div class="modal-title">Risk &amp; Control Matrix (RACM) — Access Management</div><button class="btn-close" onclick="closeMod('m-racm')">✕</button></div><div class="modal-body"><p style="font-size:.8rem;color:var(--text-mid);margin-bottom:.85rem">Rows marked ✅ are pre-filled. Rows in <span style="color:var(--gold)">gold</span> require your completion.</p><table class="doc-tbl"><tr><th>Ref</th><th>Risk</th><th>Control Description</th><th>Owner</th><th>Type</th><th>Freq</th><th>TSC</th></tr><tr><td>AC-01</td><td>Unauthorized access to financial systems</td><td>✅ Dual approval (IT Manager + CISO) required before account creation in ServiceNow</td><td>D. Okafor</td><td>Preventive</td><td>Per event</td><td>CC6.1</td></tr><tr><td>AC-02</td><td>Terminated employees retain access</td><td>✅ HR triggers automated deprovisioning within 4 hrs of termination via ServiceNow workflow</td><td>P. Hollis</td><td>Preventive</td><td>Per event</td><td>CC6.2</td></tr><tr><td style="color:var(--gold)">AC-03</td><td style="color:var(--gold)"><em>Excessive privilege accumulation over time</em></td><td style="color:var(--gold)">[YOUR TASK — Complete this row]</td><td style="color:var(--gold)">[Assign owner]</td><td style="color:var(--gold)">[Type?]</td><td style="color:var(--gold)">[Freq?]</td><td>CC6.3</td></tr><tr><td style="color:var(--gold)">AC-04</td><td style="color:var(--gold)"><em>Shared/generic accounts used in production</em></td><td style="color:var(--gold)">[YOUR TASK — Complete this row]</td><td style="color:var(--gold)">[Assign owner]</td><td style="color:var(--gold)">[Type?]</td><td style="color:var(--gold)">[Freq?]</td><td>CC6.1</td></tr><tr><td style="color:var(--gold)">AC-05</td><td style="color:var(--gold)"><em>Undetected unauthorized access attempts</em></td><td style="color:var(--gold)">[YOUR TASK — Complete this row]</td><td style="color:var(--gold)">[Assign owner]</td><td style="color:var(--gold)">[Type?]</td><td style="color:var(--gold)">[Freq?]</td><td>CC7.2</td></tr><tr><td style="color:var(--gold)">AC-06</td><td style="color:var(--gold)"><em>Privileged accounts without MFA</em></td><td style="color:var(--gold)">[YOUR TASK — Complete this row]</td><td style="color:var(--gold)">[Assign owner]</td><td style="color:var(--gold)">[Type?]</td><td style="color:var(--gold)">[Freq?]</td><td>CC6.1</td></tr><tr><td style="color:var(--gold)">AC-07</td><td style="color:var(--gold)"><em>Access rights not reviewed periodically</em></td><td style="color:var(--gold)">[YOUR TASK — Complete this row]</td><td style="color:var(--gold)">[Assign owner]</td><td style="color:var(--gold)">[Type?]</td><td style="color:var(--gold)">[Freq?]</td><td>CC6.3</td></tr></table></div></div>
+
+  <!-- TRANSCRIPT -->
+  <div class="modal" id="m-transcript"><div class="modal-hd"><div class="modal-title">Walkthrough Interview Transcript — Derek Okafor</div><button class="btn-close" onclick="closeMod('m-transcript')">✕</button></div><div class="modal-body"><p style="font-size:.75rem;color:var(--text-mid)">Date: Jan 22, 2025 | Participants: Aisha Nwosu (IT Auditor), Derek Okafor (IT Manager) | via Teams</p><h3>Access Provisioning</h3><p><strong>Aisha:</strong> Derek, walk me through what happens when a new employee needs access to the core banking system.<br><strong>Derek:</strong> When HR completes onboarding in Workday, it triggers a ServiceNow ticket automatically. That ticket goes to me and the CISO's delegate — both have to approve before the account gets created. New accounts get the minimum access role by default — "role 1." Elevated access requires a separate request. Provisioning targets 24 hours from ticket creation, tracked on our SLA dashboard.</p><h3>Quarterly Access Reviews</h3><p><strong>Aisha:</strong> How do you review existing access?<br><strong>Derek:</strong> Every quarter I run a user access report from FiServe and email it to each department head. They have 10 business days to certify or flag changes. Sign-offs are documented in SharePoint. Non-respondents get escalated to their VP. It's in IT Access Management Policy v3.2.</p><h3>Termination Process</h3><p><strong>Aisha:</strong> What happens when someone is terminated?<br><strong>Derek:</strong> HR marks the termination in Workday immediately. That triggers the deprovision workflow in ServiceNow — all accounts disabled within 4 hours. Privileged accounts are disabled immediately — zero tolerance. I get a workflow completion notification.</p><h3>MFA &amp; Password Policy</h3><p><strong>Aisha:</strong> Is MFA in place for all users?<br><strong>Derek:</strong> For Microsoft 365, yes — mandatory for everyone since Q3 2023. For FiServe, MFA is enforced for admin accounts and finance team only. Standard users are still password-only. Known gap — we're pushing the vendor. Passwords are 12 characters minimum, 90-day rotation, no reuse of last 10.</p><h3>Logging &amp; Monitoring</h3><p><strong>Aisha:</strong> Is failed login activity monitored?<br><strong>Derek:</strong> Yes. Splunk alerts our SOC team at 5+ failed logins within 10 minutes. They investigate within 30 minutes. SOC runs 24/7.</p></div></div>
+
+  <!-- EVIDENCE -->
+  <div class="modal" id="m-evidence"><div class="modal-hd"><div class="modal-title">Evidence Samples — Control Testing</div><button class="btn-close" onclick="closeMod('m-evidence')">✕</button></div><div class="modal-body"><h3>Evidence 1 — Provisioning Approval (AC-01)</h3><table class="doc-tbl"><tr><th>Ticket</th><th>User</th><th>System</th><th>Approval 1</th><th>Approval 2</th><th>Result</th></tr><tr><td>SN-20241</td><td>J. Barnes</td><td>FiServe</td><td>D. Okafor ✓</td><td>P. Chandrasekaran ✓</td><td style="color:var(--green-bright)">Pass</td></tr><tr><td>SN-20245</td><td>T. Reid</td><td>FiServe</td><td>D. Okafor ✓</td><td style="color:var(--red-bright)">MISSING ✗</td><td style="color:var(--red-bright)">Exception</td></tr><tr><td>SN-20267</td><td>M. Castro</td><td>Salesforce</td><td>D. Okafor ✓</td><td>P. Chandrasekaran ✓</td><td style="color:var(--green-bright)">Pass</td></tr></table><h3>Evidence 2 — Termination Workflow (AC-02)</h3><table class="doc-tbl"><tr><th>Employee</th><th>Term Date</th><th>Deprovision Time</th><th>SLA Met (4hr)</th></tr><tr><td>K. Whitmore</td><td>2024-06-14</td><td>2.1 hours</td><td style="color:var(--green-bright)">✓ Yes</td></tr><tr><td>D. Petrov</td><td>2024-08-01</td><td>3.8 hours</td><td style="color:var(--green-bright)">✓ Yes</td></tr><tr><td>L. Huang</td><td>2024-10-22</td><td style="color:var(--red-bright)">27.4 hours</td><td style="color:var(--red-bright)">✗ No — Exception</td></tr></table><h3>Evidence 3 — Quarterly Access Review (AC-07)</h3><table class="doc-tbl"><tr><th>Quarter</th><th>Report Sent</th><th>Dept Heads Responded</th><th>Within 10 Days</th></tr><tr><td>Q1 2024</td><td>2024-04-05</td><td>8 of 8</td><td style="color:var(--green-bright)">✓ Yes</td></tr><tr><td>Q2 2024</td><td>2024-07-08</td><td>6 of 8</td><td style="color:var(--orange)">Partial — Exception</td></tr><tr><td>Q3 2024</td><td>2024-10-03</td><td>8 of 8</td><td style="color:var(--green-bright)">✓ Yes</td></tr></table></div></div>
+
+  <!-- FINDING TEMPLATE -->
+  <div class="modal" id="m-findtempl"><div class="modal-hd"><div class="modal-title">Finding Documentation Template (5Cs)</div><button class="btn-close" onclick="closeMod('m-findtempl')">✕</button></div><div class="modal-body"><p style="font-size:.82rem;color:var(--text-mid);margin-bottom:1rem">Complete example below. Use this structure for all your findings.</p><div class="finding h"><div class="f-sev">● HIGH RISK</div><div class="f-title">AC-F01: Unauthorized Account Provisioned Without Dual Approval</div><div class="f-row"><label>Reference</label><span>AC-F01 | Control AC-01 | SOC 2 CC6.1</span></div><div class="f-row"><label>Criteria</label><span>Per IT Access Management Policy v3.2, all new FiServe accounts require dual approval (IT Manager + CISO delegate) before activation.</span></div><div class="f-row"><label>Condition</label><span>1 of 3 (33%) provisioning tickets tested — SN-20245 — showed the CISO delegate approval was absent when the account was created on April 2, 2024.</span></div><div class="f-row"><label>Cause</label><span>ServiceNow workflow did not enforce a hard block on account creation when the second approval field was empty. The control relied on manual compliance.</span></div><div class="f-row"><label>Effect</label><span>Unauthorized or inappropriate user access to NovaBridge's core banking system, increasing fraud risk, data breach exposure, and OCC non-compliance risk.</span></div><div class="f-row"><label>Recommendation</label><span>1. Configure ServiceNow to require both approvals before workflow proceeds. 2. Retroactively review all 2024 provisioning tickets. 3. Remediate within 30 days.</span></div></div><div class="finding m" style="margin-top:.85rem"><div class="f-sev">● YOUR FINDING — MEDIUM</div><div class="f-title">[Your Finding Title]</div><div class="f-row"><label>Criteria</label><span style="color:var(--gold)">[Complete]</span></div><div class="f-row"><label>Condition</label><span style="color:var(--gold)">[Complete]</span></div><div class="f-row"><label>Cause</label><span style="color:var(--gold)">[Complete]</span></div><div class="f-row"><label>Effect</label><span style="color:var(--gold)">[Complete]</span></div><div class="f-row"><label>Recommendation</label><span style="color:var(--gold)">[Complete]</span></div></div></div></div>
+
+  <!-- SAMPLE FINDINGS -->
+  <div class="modal" id="m-sampfinds"><div class="modal-hd"><div class="modal-title">Sample Finding Write-Ups — Reference Examples</div><button class="btn-close" onclick="closeMod('m-sampfinds')">✕</button></div><div class="modal-body"><div class="finding m"><div class="f-sev">● MEDIUM RISK</div><div class="f-title">AC-F02: Termination SLA Breach — Account Active 27 Hours Post-Termination</div><div class="f-row"><label>Criteria</label><span>IT Access Management Policy v3.2 requires all accounts deprovisioned within 4 hours of employee termination.</span></div><div class="f-row"><label>Condition</label><span>1 of 3 (33%) termination cases tested — L. Huang — showed accounts remained active 27.4 hours post-termination (October 22, 2024).</span></div><div class="f-row"><label>Cause</label><span>The ServiceNow deprovisioning workflow experienced a queue backlog due to a system update deployed the same day, causing the automated trigger to delay.</span></div><div class="f-row"><label>Effect</label><span>A former employee's active credentials could have been exploited during the 23-hour SLA breach window, creating insider threat and data exfiltration risk.</span></div><div class="f-row"><label>Recommendation</label><span>Implement a real-time alert to the IT Manager if any deprovisioning ticket exceeds 2 hours. Conduct monthly root cause analysis of queue failures.</span></div></div><div class="finding l" style="margin-top:.85rem"><div class="f-sev">● LOW RISK</div><div class="f-title">AC-F03: Q2 Access Review Incomplete — 2 Departments Did Not Certify</div><div class="f-row"><label>Criteria</label><span>All department heads must complete access certification within 10 business days of receiving the quarterly access report.</span></div><div class="f-row"><label>Condition</label><span>For Q2 2024, 2 of 8 departments (Finance and Legal) did not return certifications within the required 10 business days.</span></div><div class="f-row"><label>Cause</label><span>No automated reminder or escalation was in place for non-responsive department heads.</span></div><div class="f-row"><label>Effect</label><span>Incomplete access certification reduces confidence that user access rights are appropriate, increasing access creep risk.</span></div><div class="f-row"><label>Recommendation</label><span>Configure automated reminders at Day 5 and Day 9, with VP escalation triggered automatically at Day 10 if uncertified.</span></div></div></div></div>
+
+  <!-- WALKTHROUGH TEMPLATE -->
+  <div class="modal" id="m-wkthru"><div class="modal-hd"><div class="modal-title">Walkthrough Documentation Template</div><button class="btn-close" onclick="closeMod('m-wkthru')">✕</button></div><div class="modal-body"><p><strong>Engagement:</strong> SOC 2 Readiness | <strong>Area:</strong> Access Management | <strong>Preparer:</strong> [Your Name] | <strong>Date:</strong> Jan 22, 2025</p><table class="doc-tbl"><tr><th>#</th><th>Control Name</th><th>Description (from interview)</th><th>Evidence Type</th><th>Frequency</th><th>Follow-Up?</th></tr><tr><td>1</td><td style="color:var(--gold)">[Extract]</td><td style="color:var(--gold)">[Your notes]</td><td style="color:var(--gold)">[e.g., ServiceNow tickets]</td><td style="color:var(--gold)">[Freq]</td><td style="color:var(--gold)">[Yes/No]</td></tr><tr><td>2</td><td style="color:var(--gold)">[Extract]</td><td style="color:var(--gold)">[Your notes]</td><td style="color:var(--gold)"></td><td style="color:var(--gold)"></td><td style="color:var(--gold)"></td></tr><tr><td>3</td><td style="color:var(--gold)">[Extract]</td><td style="color:var(--gold)">[Your notes]</td><td style="color:var(--gold)"></td><td style="color:var(--gold)"></td><td style="color:var(--gold)"></td></tr><tr><td>4</td><td style="color:var(--gold)">[Extract]</td><td style="color:var(--gold)">[Your notes]</td><td style="color:var(--gold)"></td><td style="color:var(--gold)"></td><td style="color:var(--gold)"></td></tr><tr><td>5</td><td style="color:var(--gold)">[Extract]</td><td style="color:var(--gold)">[Your notes]</td><td style="color:var(--gold)"></td><td style="color:var(--gold)"></td><td style="color:var(--gold)"></td></tr></table></div></div>
+
+  <!-- TEST TEMPLATE -->
+  <div class="modal" id="m-testtempl"><div class="modal-hd"><div class="modal-title">Control Test Template (TOD + TOE)</div><button class="btn-close" onclick="closeMod('m-testtempl')">✕</button></div><div class="modal-body"><p><strong>Control Ref:</strong> AC-01 | <strong>Control:</strong> Dual Approval — Access Provisioning | <strong>Preparer:</strong> [Name] | <strong>Date:</strong> [Date]</p><h3>Test of Design (TOD)</h3><p><strong>Objective:</strong> Determine whether the control is designed to prevent or detect the risk.<br><strong>Procedure:</strong> Review policy documentation and ServiceNow workflow configuration. Confirm dual approval fields are required before account creation.<br><strong>TOD Conclusion:</strong> <span style="color:var(--gold)">[Design Effective / Design Deficiency]</span></p><h3>Test of Effectiveness (TOE)</h3><p><strong>Population:</strong> All provisioning tickets created Jan 1–Dec 31, 2024 (Total: 47 tickets)<br><strong>Sample Size:</strong> 3 items. Rationale: Low-volume population; 100% testing of high-risk users; 3 random for standard users.<br><strong>Sampling Method:</strong> Random number generator</p><table class="doc-tbl"><tr><th>Item</th><th>Attribute Tested</th><th>Expected</th><th>Actual</th><th>Result</th></tr><tr><td>SN-20241</td><td>Dual approval present</td><td>2 approvals</td><td>2 approvals</td><td style="color:var(--green-bright)">Pass</td></tr><tr><td>SN-20245</td><td>Dual approval present</td><td>2 approvals</td><td>1 approval</td><td style="color:var(--red-bright)">Exception</td></tr><tr><td>SN-20267</td><td>Dual approval present</td><td>2 approvals</td><td>2 approvals</td><td style="color:var(--green-bright)">Pass</td></tr></table><p><strong>TOE Conclusion:</strong> Control NOT operating effectively. 1 of 3 (33%) items tested showed an exception. See Finding AC-F01.</p></div></div>
+
+  <!-- MEMO TEMPLATE -->
+  <div class="modal" id="m-memo"><div class="modal-hd"><div class="modal-title">Audit Memo Template — Work Performed Summary</div><button class="btn-close" onclick="closeMod('m-memo')">✕</button></div><div class="modal-body"><p><strong>INTERNAL AUDIT MEMORANDUM</strong><br><strong>To:</strong> Marcus Webb, Senior IT Auditor<br><strong>From:</strong> [Your Name], IT Auditor<br><strong>Date:</strong> [Date]<br><strong>Re:</strong> Work Performed — SOC 2 Readiness, Access Management (CC6)<br><strong>Engagement Ref:</strong> IA-2025-001</p><h3>1. Audit Area &amp; Period</h3><p style="color:var(--gold)">[Complete: State the area tested and audit period Jan 1–Dec 31, 2024]</p><h3>2. Scope of Work Performed</h3><p style="color:var(--gold)">[Complete: What controls did you test? What was included/excluded?]</p><h3>3. Testing Methodology</h3><p style="color:var(--gold)">[Complete: How did you test? Inquiry, observation, inspection, re-performance?]</p><h3>4. Results Summary</h3><p style="color:var(--gold)">[Complete: X of Y controls tested. X passed, X exceptions noted. Reference finding numbers.]</p><h3>5. Conclusions &amp; Open Items</h3><p style="color:var(--gold)">[Complete: Overall conclusion on control environment. Any outstanding items?]</p></div></div>
+
+  <!-- WORKPAPER INDEX -->
+  <div class="modal" id="m-wpindex"><div class="modal-hd"><div class="modal-title">Workpaper Index Template</div><button class="btn-close" onclick="closeMod('m-wpindex')">✕</button></div><div class="modal-body"><p><strong>Engagement:</strong> SOC 2 Readiness | <strong>Area:</strong> Access Management | <strong>Period:</strong> Jan–Dec 2024</p><table class="doc-tbl"><tr><th>WP Ref</th><th>Description</th><th>Preparer</th><th>Date</th><th>Reviewer</th><th>Rev Date</th><th>Status</th></tr><tr><td>WP-01</td><td>Audit Charter &amp; Engagement Letter</td><td style="color:var(--gold)">[Name]</td><td style="color:var(--gold)">[Date]</td><td>Marcus Webb</td><td style="color:var(--gold)">[Date]</td><td style="color:var(--gold)">[Final/Draft]</td></tr><tr><td>WP-02</td><td>RACM — Access Management</td><td style="color:var(--gold)">[Name]</td><td style="color:var(--gold)">[Date]</td><td>Marcus Webb</td><td style="color:var(--gold)">[Date]</td><td style="color:var(--gold)">[Final/Draft]</td></tr><tr><td>WP-03</td><td>Walkthrough — Derek Okafor</td><td style="color:var(--gold)">[Name]</td><td style="color:var(--gold)">[Date]</td><td>Marcus Webb</td><td style="color:var(--gold)">[Date]</td><td style="color:var(--gold)">[Final/Draft]</td></tr><tr><td>WP-04</td><td>Control Test — AC-01: Provisioning</td><td style="color:var(--gold)">[Name]</td><td style="color:var(--gold)">[Date]</td><td>Marcus Webb</td><td style="color:var(--gold)">[Date]</td><td style="color:var(--gold)">[Final/Draft]</td></tr><tr><td>WP-05</td><td>Control Test — AC-02: Terminations</td><td style="color:var(--gold)">[Name]</td><td style="color:var(--gold)">[Date]</td><td>Marcus Webb</td><td style="color:var(--gold)">[Date]</td><td style="color:var(--gold)">[Final/Draft]</td></tr><tr><td>WP-06</td><td>Findings Documentation (AC-F01–F03)</td><td style="color:var(--gold)">[Name]</td><td style="color:var(--gold)">[Date]</td><td>Marcus Webb</td><td style="color:var(--gold)">[Date]</td><td style="color:var(--gold)">[Final/Draft]</td></tr><tr><td>WP-07</td><td>Work Performed Memo</td><td style="color:var(--gold)">[Name]</td><td style="color:var(--gold)">[Date]</td><td>Marcus Webb</td><td style="color:var(--gold)">[Date]</td><td style="color:var(--gold)">[Final/Draft]</td></tr></table></div></div>
+
+  <!-- SCORECARD L1 -->
+  <div class="modal" id="m-sc1"><div class="modal-hd"><div class="modal-title">Level 1 Scorecard — IT Auditor</div><button class="btn-close" onclick="closeMod('m-sc1')">✕</button></div><div class="modal-body"><p style="font-size:.82rem;color:var(--text-mid);margin-bottom:1.25rem">100-point rubric across 10 competencies. Minimum passing score: 70/100.</p><table class="score-tbl"><tr><th>#</th><th>Competency</th><th>Max Pts</th><th>Assessed On</th></tr><tr><td>1</td><td>Understanding of Audit Scope &amp; Authority</td><td>10</td><td>Task 1</td></tr><tr><td>2</td><td>Risk &amp; Control Identification</td><td>10</td><td>Task 2</td></tr><tr><td>3</td><td>Walkthrough Execution &amp; Control Extraction</td><td>10</td><td>Task 3</td></tr><tr><td>4</td><td>Test of Design (TOD) Quality</td><td>10</td><td>Task 4</td></tr><tr><td>5</td><td>Test of Effectiveness (TOE) Quality</td><td>10</td><td>Task 4</td></tr><tr><td>6</td><td>Exception Identification Accuracy</td><td>10</td><td>Task 5</td></tr><tr><td>7</td><td>Finding Documentation Quality (5Cs)</td><td>10</td><td>Task 5</td></tr><tr><td>8</td><td>Professional Writing — Audit Memo</td><td>10</td><td>Task 6</td></tr><tr><td>9</td><td>Workpaper Organization &amp; Tie-Out</td><td>10</td><td>Task 7</td></tr><tr><td>10</td><td>Responsiveness to Review Feedback</td><td>10</td><td>Task 8</td></tr></table><p style="margin-top:.85rem;font-size:.82rem;color:var(--text-mid)"><strong style="color:var(--gold)">Scoring:</strong> 90–100 Exceptional | 80–89 Proficient | 70–79 Meets Standard | Below 70 = Remediation required</p></div></div>
+
+  <!-- ONBOARDING -->
+  <div class="modal" id="m-onboard"><div class="modal-hd"><div class="modal-title">Welcome to NovaBridge — Onboarding Letter</div><button class="btn-close" onclick="closeMod('m-onboard')">✕</button></div><div class="modal-body"><p><strong>From:</strong> Patricia Hollis, HR Director | <strong>Date:</strong> [Your Start Date]</p><h3>Welcome to NovaBridge Financial Services</h3><p>On behalf of the entire NovaBridge team, we are pleased to welcome you to the Internal Audit Department. You are joining a team of accomplished professionals committed to protecting the integrity of NovaBridge's operations through rigorous, independent assurance.</p><h3>Your First Week</h3><p><strong>Day 1:</strong> HR orientation, IT setup, security badge, benefits enrollment<br><strong>Day 2:</strong> Meet your team and Audit Manager. Review the Audit Charter and engagement calendar.<br><strong>Days 3–5:</strong> Mandatory training: AML Awareness, Data Privacy (GDPR/CCPA), Information Security Fundamentals, IIA Standards Overview.</p><h3>Benefits Summary</h3><p>Medical, dental, and vision from Day 1. 401(k) with 4% employer match (3-year vesting). 20 days PTO + 10 federal holidays. Professional development budget: $3,500/year. Certification reimbursement: up to $2,000/year.</p><p style="margin-top:1.25rem;font-style:italic;color:var(--text-mid)">We look forward to your contributions.<br><br><strong>Patricia Hollis</strong><br>HR Director, NovaBridge Financial Services</p></div></div>
+
+  <!-- ORG CHART -->
+  <div class="modal" id="m-orgchart"><div class="modal-hd"><div class="modal-title">IT Audit Department — Organizational Chart</div><button class="btn-close" onclick="closeMod('m-orgchart')">✕</button></div><div class="modal-body"><pre>
+BOARD AUDIT COMMITTEE
+  └── Dr. Shirley Watkins (Chair)
+        │
+CHIEF AUDIT EXECUTIVE
+  └── Eleanor Voss (CAE)  [NB-001]
+        │
+DEPUTY CAE, IT AUDIT
+  └── Reginald Ashford  [NB-002]
+        │
+IT AUDIT SENIOR MANAGER
+  └── Tamara Osei  [NB-007]
+        │
+IT AUDIT MANAGER
+  └── Jonathan Ferreira  [NB-012]
+        │
+        ├── SENIOR IT AUDITOR
+        │     ├── Marcus Webb  [NB-018]
+        │     │     ├── Aisha Nwosu  [NB-025]
+        │     │     └── Priyanka Sharma  [NB-027]
+        │     └── Fatima Al-Rashid  [NB-019]
+        │           └── Carlos Mendez  [NB-026]
+        │
+        └── IT AUDIT COORDINATOR
+              └── Thomas Wycliffe  [NB-030]
+  </pre></div></div>
+
+  <!-- CODE OF CONDUCT -->
+  <div class="modal" id="m-coc"><div class="modal-hd"><div class="modal-title">Audit Department Code of Conduct</div><button class="btn-close" onclick="closeMod('m-coc')">✕</button></div><div class="modal-body"><h3>1. Independence &amp; Objectivity</h3><p>All IT auditors must maintain independence in fact and appearance. You may not audit any area where you have had management responsibility, a financial interest, or a personal relationship with the auditee within the past 12 months. All impairments must be disclosed immediately to your manager.</p><h3>2. Confidentiality</h3><p>All information obtained during audit engagements is strictly confidential. Audit findings, workpapers, and evidence may not be shared outside the Internal Audit Department without written CAE authorization. This obligation continues after employment ends.</p><h3>3. Professional Conduct</h3><p>Auditors must treat all auditees with professionalism and respect. Findings must be supported by sufficient, reliable evidence. Auditors must never exaggerate or minimize findings and must present facts objectively.</p><h3>4. Conflicts of Interest</h3><p>Any personal, financial, or professional relationship that could impair — or appear to impair — independence must be disclosed annually and upon discovery. This includes financial holdings in audited vendors or subsidiaries.</p><h3>5. Reporting Violations</h3><p>Violations of this Code must be reported to the Audit Manager or CAE. NovaBridge prohibits retaliation. Anonymous reporting: Ethics Hotline 1-800-NB-ETHIC.</p></div></div>
+
+  <!-- PERF REVIEW -->
+  <div class="modal" id="m-perfrev"><div class="modal-hd"><div class="modal-title">Annual Performance Review Template</div><button class="btn-close" onclick="closeMod('m-perfrev')">✕</button></div><div class="modal-body"><p><strong>Employee:</strong> _____________________ | <strong>Title:</strong> _____________________ | <strong>Review Period:</strong> Jan–Dec 2024</p><p><strong>Reviewer:</strong> _____________________ | <strong>Date:</strong> _____________________</p><p style="font-size:.82rem;color:var(--text-mid);margin-top:.5rem">Rating Scale: 1 = Below Expectations | 2 = Developing | 3 = Meets Expectations | 4 = Exceeds | 5 = Outstanding</p><table class="doc-tbl"><tr><th>Competency</th><th>Rating (1–5)</th><th>Specific Behavioral Examples</th></tr><tr><td>Technical Audit Skills</td><td style="color:var(--gold)">[Score]</td><td style="color:var(--gold)">[Examples]</td></tr><tr><td>Risk &amp; Control Knowledge</td><td style="color:var(--gold)">[Score]</td><td style="color:var(--gold)">[Examples]</td></tr><tr><td>Workpaper Quality</td><td style="color:var(--gold)">[Score]</td><td style="color:var(--gold)">[Examples]</td></tr><tr><td>Finding Documentation</td><td style="color:var(--gold)">[Score]</td><td style="color:var(--gold)">[Examples]</td></tr><tr><td>Written Communication</td><td style="color:var(--gold)">[Score]</td><td style="color:var(--gold)">[Examples]</td></tr><tr><td>Verbal Communication</td><td style="color:var(--gold)">[Score]</td><td style="color:var(--gold)">[Examples]</td></tr><tr><td>Teamwork &amp; Collaboration</td><td style="color:var(--gold)">[Score]</td><td style="color:var(--gold)">[Examples]</td></tr><tr><td>Professionalism &amp; Ethics</td><td style="color:var(--gold)">[Score]</td><td style="color:var(--gold)">[Examples]</td></tr></table><h3>Development Goals — FY2025</h3><p>1. ________________________________________<br>2. ________________________________________<br>3. ________________________________________</p><h3>Target Certification(s)</h3><p style="color:var(--gold)">_______________________________</p></div></div>
+
+  <!-- CERT POLICY -->
+  <div class="modal" id="m-certpol"><div class="modal-hd"><div class="modal-title">Certification &amp; Training Support Policy</div><button class="btn-close" onclick="closeMod('m-certpol')">✕</button></div><div class="modal-body"><table class="doc-tbl"><tr><th>Certification</th><th>Issuing Body</th><th>Reimbursement</th><th>Study Leave</th></tr><tr><td>CISA</td><td>ISACA</td><td>Full (exam + materials)</td><td>5 days paid</td></tr><tr><td>CRISC</td><td>ISACA</td><td>Full (exam + materials)</td><td>5 days paid</td></tr><tr><td>CIA</td><td>IIA</td><td>Full (exam + materials)</td><td>5 days paid</td></tr><tr><td>CISSP</td><td>ISC2</td><td>Up to $2,000</td><td>3 days paid</td></tr><tr><td>CISM</td><td>ISACA</td><td>Full (exam + materials)</td><td>3 days paid</td></tr><tr><td>CPA</td><td>AICPA</td><td>Up to $2,000</td><td>10 days paid</td></tr></table><h3>Annual Budget</h3><p>$3,500 per auditor for professional development including conferences, training courses, and subscriptions.</p><h3>Study Support</h3><p>Managers adjust workload during the 6 weeks prior to a scheduled exam. Requests must be submitted 60 days before exam date.</p></div></div>
+
+  <!-- HANDBOOK -->
+  <div class="modal" id="m-handbook"><div class="modal-hd"><div class="modal-title">Employee Handbook — Audit Department Excerpt</div><button class="btn-close" onclick="closeMod('m-handbook')">✕</button></div><div class="modal-body"><h3>Working Hours &amp; Flexibility</h3><p>Standard hours: 9:00 AM–5:30 PM, Monday–Friday. Hybrid model: minimum 3 days in-office, 2 remote. Extended hours may be required during peak fieldwork or regulatory examination periods.</p><h3>Audit Engagement Norms</h3><p>Workpapers must be completed within 5 business days of fieldwork. All workpapers require supervisor sign-off before a report is issued. Reviewers must return comments within 1 business day of receiving drafts.</p><h3>Timekeeping</h3><p>All hours logged by engagement code in Workday by Friday each week. Unallocated time must not exceed 10% of weekly hours. Overtime requires pre-approval from your Audit Manager.</p><h3>Communication Standards</h3><p>All external communications with auditees must be professional and in writing. Sensitive audit matters — particularly preliminary findings — must not be communicated verbally without manager awareness. All emails containing finding information must be marked Confidential.</p></div></div>
+
+  <!-- CLOUD AUDIT PROGRAM -->
+  <div class="modal" id="m-cloudprog"><div class="modal-hd"><div class="modal-title">Cloud Security Audit Program — Existing Draft</div><button class="btn-close" onclick="closeMod('m-cloudprog')">✕</button></div><div class="modal-body"><p style="font-size:.8rem;color:var(--text-mid);margin-bottom:.85rem">Written in 2022 for on-premise environments. Identify gaps and update for NovaBridge's AWS environment.</p><table class="doc-tbl"><tr><th>Step</th><th>Objective</th><th>Framework Ref</th><th>Status</th></tr><tr><td>CS-01</td><td>Verify network perimeter firewall rules are documented and approved</td><td>NIST SP 800-41</td><td style="color:var(--orange)">⚠ On-premise only</td></tr><tr><td>CS-02</td><td>Confirm server room physical access controls (badge, CCTV)</td><td>ISO 27001 A.11</td><td style="color:var(--orange)">⚠ Not applicable to cloud</td></tr><tr><td>CS-03</td><td>Review antivirus deployment across all endpoints</td><td>NIST CSF PR.DS</td><td style="color:var(--green-bright)">✓ Still applicable</td></tr><tr><td>CS-04</td><td>Assess patch management for on-premise servers</td><td>NIST SP 800-40</td><td style="color:var(--orange)">⚠ Needs cloud adaptation</td></tr><tr><td>CS-05</td><td>Review data backup procedures and test restore capability</td><td>NIST CSF RC.RP</td><td style="color:var(--green-bright)">✓ Applicable with updates</td></tr><tr><td style="color:var(--gold)">CS-06</td><td style="color:var(--gold)">[YOUR TASK] Add AWS IAM Role Governance objective</td><td style="color:var(--gold)">CSA CCM IAM-??</td><td style="color:var(--gold)">New — Add</td></tr><tr><td style="color:var(--gold)">CS-07</td><td style="color:var(--gold)">[YOUR TASK] Add CloudTrail/Logging objective</td><td style="color:var(--gold)">CSA CCM LOG-??</td><td style="color:var(--gold)">New — Add</td></tr><tr><td style="color:var(--gold)">CS-08</td><td style="color:var(--gold)">[YOUR TASK] Add S3 Bucket Security Configuration objective</td><td style="color:var(--gold)">CSA CCM DSP-??</td><td style="color:var(--gold)">New — Add</td></tr></table></div></div>
+
+  <!-- JUNIOR WORKPAPER -->
+  <div class="modal" id="m-juniorwp"><div class="modal-hd"><div class="modal-title">Aisha Nwosu — Draft Workpaper: IAM Role Review (Find the 5 Errors)</div><button class="btn-close" onclick="closeMod('m-juniorwp')">✕</button></div><div class="modal-body"><p style="font-size:.75rem;color:var(--text-mid)">Prepared by: Aisha Nwosu | Date: Feb 12, 2025 | Control: AC-03 — Privileged IAM Role Review</p><h3>Objective</h3><p>To determine whether NovaBridge's privileged AWS IAM roles are reviewed periodically and that only authorized individuals hold privileged access.</p><h3>Population &amp; Sample</h3><p>Total IAM roles: 247. Privileged roles (Admin/PowerUser): 31. <span style="color:var(--red-bright);font-weight:600">[ERROR 1: Sample = 5 roles with no rationale. IIA standards require documentation of sampling methodology and basis for sample size selection.]</span></p><h3>Test Performed</h3><p>Obtained IAM role report from AWS console Feb 10, 2025. Compared role holders against HR employee list. <span style="color:var(--red-bright);font-weight:600">[ERROR 2: HR list used is dated January 2024 — not current. Evidence is over 12 months old and does not cover the audit period.]</span></p><h3>Results</h3><p>Of 5 roles tested: 4 appear appropriate. 1 role (arn:aws:iam::account:role/NB-Admin-007) is assigned to "jsmith" who could not be matched to the HR list. <span style="color:var(--red-bright);font-weight:600">[ERROR 3: Aisha concludes "no exception noted" despite being unable to identify the user. Unresolved items must be flagged as exceptions pending management response.]</span></p><h3>Conclusion</h3><p><span style="color:var(--red-bright);font-weight:600">[ERROR 4: Conclusion states "Controls are operating effectively." This is not supported by the results — one user is unidentified. Conclusion must be revised to reflect actual findings.]</span></p><h3>Evidence Reference</h3><p>AWS IAM Role Export (screenshot attached). <span style="color:var(--red-bright);font-weight:600">[ERROR 5: No workpaper reference number or index cross-reference. Evidence cannot be tied to the workpaper index, making QA review impossible.]</span></p></div></div>
+
+  <!-- MEETING AGENDA -->
+  <div class="modal" id="m-meetagenda"><div class="modal-hd"><div class="modal-title">Meeting Agenda &amp; Notes — CISO &amp; Cloud Engineer</div><button class="btn-close" onclick="closeMod('m-meetagenda')">✕</button></div><div class="modal-body"><p><strong>Date:</strong> Feb 18, 2025 | <strong>Time:</strong> 10:00 AM EST | <strong>Attendees:</strong> You, Priya Chandrasekaran (CISO), James Liu (Cloud Engineer)</p><h3>1. Scope Confirmation</h3><p>Confirmed AWS regions in scope: us-east-1, us-east-2, eu-west-1.</p><h3>2. Evidence Requests Agreed</h3><p>• Priya: IAM role export by Feb 25<br>• James: CloudTrail config report by Feb 22<br>• James: S3 bucket inventory by Mar 1</p><h3>3. Audit Team Access</h3><p>James will provision a read-only auditor IAM role (CloudWatch, CloudTrail, IAM access) by Feb 19.</p><h3>4. Known Issues Disclosed</h3><p>Priya disclosed: 2 AWS regions (ap-southeast-1, ap-southeast-2) added in Q4 2024 are not yet fully configured per Cloud Security Policy. She requested 90 days to remediate.</p><h3>5. Next Steps &amp; Timeline</h3><p>Fieldwork completion: March 15. Draft findings to management: March 22. Management response due: April 4. Next check-in suggested: March 10.</p><p style="margin-top:1rem;color:var(--gold);font-style:italic">Draft a follow-up email summarizing the above, assigning owners and due dates, and confirming the next check-in date.</p></div></div>
+
+  <!-- MAP TRACKER -->
+  <div class="modal" id="m-maptrack"><div class="modal-hd"><div class="modal-title">Management Action Plan (MAP) Tracker</div><button class="btn-close" onclick="closeMod('m-maptrack')">✕</button></div><div class="modal-body"><table class="doc-tbl"><tr><th>Finding</th><th>Severity</th><th>Title</th><th>Management Response</th><th>Owner</th><th>Target Date</th><th>Status</th></tr><tr><td>CS-F01</td><td style="color:var(--red-bright)">HIGH</td><td>23 Stale Privileged IAM Roles</td><td style="color:var(--gold)">[Complete]</td><td style="color:var(--gold)">[Assign from HR Roster]</td><td style="color:var(--gold)">[Within 30 days]</td><td>Open</td></tr><tr><td>CS-F02</td><td style="color:var(--orange)">MEDIUM</td><td>CloudTrail Disabled in 2 Regions</td><td style="color:var(--gold)">[Complete]</td><td style="color:var(--gold)">[Assign from HR Roster]</td><td style="color:var(--gold)">[Within 60 days]</td><td>Open</td></tr><tr><td>CS-F03</td><td style="color:var(--gold)">LOW</td><td>S3 Versioning Not Enabled</td><td style="color:var(--gold)">[Complete]</td><td style="color:var(--gold)">[Assign from HR Roster]</td><td style="color:var(--gold)">[Within 90 days]</td><td>Open</td></tr></table></div></div>
+
+  <!-- PLANNING MEMO -->
+  <div class="modal" id="m-planmemo"><div class="modal-hd"><div class="modal-title">Audit Planning Memo Template</div><button class="btn-close" onclick="closeMod('m-planmemo')">✕</button></div><div class="modal-body"><p><strong>MEMORANDUM</strong><br><strong>To:</strong> Tamara Osei, IT Audit Senior Manager<br><strong>From:</strong> [Your Name], Senior IT Auditor<br><strong>Re:</strong> Cloud Security Audit — Planning Memo<br><strong>Date:</strong> January 31, 2025</p><h3>1. Audit Objectives</h3><p style="color:var(--gold)">[Complete: State 3–4 specific objectives]</p><h3>2. Systems In Scope</h3><p style="color:var(--gold)">[Complete: List AWS services and regions]</p><h3>3. Out of Scope</h3><p style="color:var(--gold)">[Complete: What is excluded and why]</p><h3>4. Risk Assessment Basis</h3><p style="color:var(--gold)">[Complete: Why is this high risk?]</p><h3>5. Resource Plan</h3><p style="color:var(--gold)">[Complete: Who does what? Hours per person?]</p><h3>6. 10-Week Timeline</h3><table class="doc-tbl"><tr><th>Week</th><th>Activity</th><th>Owner</th></tr><tr><td>1–2</td><td>Planning, scoping, risk assessment</td><td style="color:var(--gold)">[Assign]</td></tr><tr><td>3–4</td><td>Walkthroughs &amp; evidence requests</td><td style="color:var(--gold)">[Assign]</td></tr><tr><td>5–7</td><td>Control testing (TOD + TOE)</td><td style="color:var(--gold)">[Assign]</td></tr><tr><td>8</td><td>Finding review &amp; draft report</td><td style="color:var(--gold)">[Assign]</td></tr><tr><td>9</td><td>Management response period</td><td style="color:var(--gold)">[Assign]</td></tr><tr><td>10</td><td>Final report issuance</td><td style="color:var(--gold)">[Assign]</td></tr></table></div></div>
+
+  <!-- ANNUAL AUDIT PLAN -->
+  <div class="modal" id="m-auditplan"><div class="modal-hd"><div class="modal-title">Annual IT Audit Plan Template — FY2025</div><button class="btn-close" onclick="closeMod('m-auditplan')">✕</button></div><div class="modal-body"><p><strong>To:</strong> Eleanor Voss, CAE | <strong>From:</strong> [Your Name], IT Audit Manager | <strong>Date:</strong> January 2025</p><h3>Risk Assessment Basis</h3><p>This plan is based on: prior year audit results, enterprise risk register, regulatory requirements (OCC, SOX), technology change inventory (AWS migration, AI implementation), and CAE/Audit Committee input.</p><h3>Planned Engagements</h3><table class="doc-tbl"><tr><th>Audit</th><th>Domain</th><th>Risk</th><th>Qtr</th><th>Hours</th><th>Lead</th></tr><tr><td>1. SOC 2 Readiness</td><td>Access/Change Mgmt</td><td style="color:var(--red-bright)">High</td><td>Q1</td><td>320</td><td>Marcus Webb</td></tr><tr><td>2. Cloud Security</td><td>AWS Infrastructure</td><td style="color:var(--red-bright)">High</td><td>Q1–Q2</td><td>280</td><td>Fatima Al-Rashid</td></tr><tr><td style="color:var(--gold)">3. [YOUR AUDIT]</td><td style="color:var(--gold)">[Domain]</td><td style="color:var(--gold)">[H/M/L]</td><td style="color:var(--gold)">[Qtr]</td><td style="color:var(--gold)">[Hours]</td><td style="color:var(--gold)">[Auditor]</td></tr><tr><td style="color:var(--gold)">4. [YOUR AUDIT]</td><td style="color:var(--gold)">[Domain]</td><td style="color:var(--gold)">[H/M/L]</td><td style="color:var(--gold)">[Qtr]</td><td style="color:var(--gold)">[Hours]</td><td style="color:var(--gold)">[Auditor]</td></tr><tr><td style="color:var(--gold)">5. [YOUR AUDIT]</td><td style="color:var(--gold)">[Domain]</td><td style="color:var(--gold)">[H/M/L]</td><td style="color:var(--gold)">[Qtr]</td><td style="color:var(--gold)">[Hours]</td><td style="color:var(--gold)">[Auditor]</td></tr><tr><td style="color:var(--gold)">6. [YOUR AUDIT]</td><td style="color:var(--gold)">[Domain]</td><td style="color:var(--gold)">[H/M/L]</td><td style="color:var(--gold)">[Qtr]</td><td style="color:var(--gold)">[Hours]</td><td style="color:var(--gold)">[Auditor]</td></tr></table></div></div>
+
+  <!-- QA CHECKLIST -->
+  <div class="modal" id="m-qachk"><div class="modal-hd"><div class="modal-title">QA Review Checklist — IT Audit File</div><button class="btn-close" onclick="closeMod('m-qachk')">✕</button></div><div class="modal-body"><p style="font-size:.82rem;color:var(--text-mid);margin-bottom:.85rem">Perform a QA review of this file. 5 issues are embedded below — find them and document your review notes.</p><table class="doc-tbl"><tr><th>QA Criterion</th><th>Required Standard</th><th>File Status</th></tr><tr><td>Audit program approved prior to fieldwork</td><td>Manager sign-off before fieldwork begins</td><td style="color:var(--green-bright)">✓ Approved Jan 18</td></tr><tr><td>All findings rated with severity</td><td>H/M/L rating documented for each finding</td><td style="color:var(--red-bright)">✗ ISSUE 1: Finding CS-F02 has no severity rating</td></tr><tr><td>Management responses obtained for all findings</td><td>Written response from process owner required</td><td style="color:var(--red-bright)">✗ ISSUE 2: CS-F01 has no management response — report cannot be issued</td></tr><tr><td>Workpapers reviewed and signed off by supervisor</td><td>Reviewer initials and date on all workpapers</td><td style="color:var(--red-bright)">✗ ISSUE 3: WP-06 (Findings) has no reviewer sign-off</td></tr><tr><td>Evidence tied to control tests</td><td>Each test references specific evidence item</td><td style="color:var(--red-bright)">✗ ISSUE 4: WP-04 references "AWS screenshot" but file is not in workpaper index</td></tr><tr><td>Report reviewed by Senior Manager before issuance</td><td>Senior Manager sign-off required</td><td style="color:var(--red-bright)">✗ ISSUE 5: Draft report sent to CFO before Senior Manager review — protocol violation</td></tr><tr><td>Engagement letter on file</td><td>Signed engagement letter in WP-01</td><td style="color:var(--green-bright)">✓ Filed Jan 6</td></tr></table></div></div>
+
+  <!-- REPORT TEMPLATE -->
+  <div class="modal" id="m-rpttempl"><div class="modal-hd"><div class="modal-title">Final Audit Report Template</div><button class="btn-close" onclick="closeMod('m-rpttempl')">✕</button></div><div class="modal-body"><p><strong>NOVEBRIDGE FINANCIAL SERVICES</strong><br><strong>Internal Audit Report — IT Audit</strong><br><strong>Engagement Ref:</strong> IA-2025-XXX | <strong>Report Date:</strong> [Date]</p><h3>SECTION 1 — EXECUTIVE SUMMARY</h3><p><strong>Overall Assessment:</strong> <span style="color:var(--gold)">[Satisfactory / Needs Improvement / Unsatisfactory]</span></p><p><strong>Engagement Overview:</strong> <span style="color:var(--gold)">[Complete: 1 paragraph describing what was audited, when, and by whom]</span></p><p><strong>Key Themes:</strong> <span style="color:var(--gold)">[Complete: 2–3 systemic themes observed across findings]</span></p><p><strong>Findings Summary:</strong></p><table class="doc-tbl"><tr><th>Severity</th><th>Count</th></tr><tr><td style="color:var(--red-bright)">Critical</td><td style="color:var(--gold)">[#]</td></tr><tr><td style="color:var(--red-bright)">High</td><td style="color:var(--gold)">[#]</td></tr><tr><td style="color:var(--orange)">Medium</td><td style="color:var(--gold)">[#]</td></tr><tr><td style="color:var(--gold)">Low</td><td style="color:var(--gold)">[#]</td></tr></table><h3>SECTION 2 — DETAILED FINDINGS</h3><p style="color:var(--gold)">[Complete: Use the Finding Template structure for each finding]</p><h3>SECTION 3 — MANAGEMENT ACTION PLAN SUMMARY</h3><p style="color:var(--gold)">[Complete: Insert MAP Tracker from Task 6]</p></div></div>
+
+  <!-- OCC LOG -->
+  <div class="modal" id="m-occlog"><div class="modal-hd"><div class="modal-title">OCC Evidence Request Log Template</div><button class="btn-close" onclick="closeMod('m-occlog')">✕</button></div><div class="modal-body"><table class="doc-tbl"><tr><th>Item #</th><th>Evidence Item</th><th>Description</th><th>Owner</th><th>Due Date</th><th>Status</th></tr><tr><td>OCC-001</td><td>Access Management Policy</td><td>IT Access Management Policy v3.2 and prior versions</td><td style="color:var(--gold)">[Assign]</td><td style="color:var(--gold)">[Date]</td><td>Open</td></tr><tr><td>OCC-002</td><td>Change Management Records</td><td>Change advisory board (CAB) minutes, Q1–Q4 2024</td><td style="color:var(--gold)">[Assign]</td><td style="color:var(--gold)">[Date]</td><td>Open</td></tr><tr><td>OCC-003</td><td>SOC 2 Report</td><td>Most recent SOC 2 Type II report for FiServe</td><td style="color:var(--gold)">[Assign]</td><td style="color:var(--gold)">[Date]</td><td>Open</td></tr><tr><td>OCC-004</td><td>Incident Response Logs</td><td>All security incidents Jan–Dec 2024</td><td style="color:var(--gold)">[Assign]</td><td style="color:var(--gold)">[Date]</td><td>Open</td></tr><tr><td>OCC-005</td><td>Prior Audit Findings</td><td>FY2023 IT audit findings and MAP status</td><td style="color:var(--gold)">[Assign]</td><td style="color:var(--gold)">[Date]</td><td>Open</td></tr><tr><td style="color:var(--gold)">OCC-006</td><td style="color:var(--gold)">[Add items as needed]</td><td style="color:var(--gold)"></td><td style="color:var(--gold)"></td><td style="color:var(--gold)"></td><td style="color:var(--gold)"></td></tr></table></div></div>
+
+  <!-- SOX SCOPE -->
+  <div class="modal" id="m-soxscope"><div class="modal-hd"><div class="modal-title">SOX ITGC Scoping Matrix</div><button class="btn-close" onclick="closeMod('m-soxscope')">✕</button></div><div class="modal-body"><table class="doc-tbl"><tr><th>System</th><th>SOX In-Scope?</th><th>Rationale</th><th>ITGC Domains</th><th>Testing Lead</th></tr><tr><td>FiServe (Core Banking)</td><td style="color:var(--green-bright)">Yes</td><td>Processes all financial transactions; directly impacts financial statement accuracy</td><td style="color:var(--gold)">[Complete]</td><td style="color:var(--gold)">[Assign]</td></tr><tr><td>Salesforce (CRM)</td><td style="color:var(--gold)">[Yes/No]</td><td style="color:var(--gold)">[Your rationale]</td><td style="color:var(--gold)">[Complete if in-scope]</td><td style="color:var(--gold)">[Assign]</td></tr><tr><td>Microsoft 365</td><td style="color:var(--gold)">[Yes/No]</td><td style="color:var(--gold)">[Your rationale]</td><td style="color:var(--gold)">[Complete if in-scope]</td><td style="color:var(--gold)">[Assign]</td></tr><tr><td>AWS Infrastructure</td><td style="color:var(--gold)">[Yes/No]</td><td style="color:var(--gold)">[Your rationale]</td><td style="color:var(--gold)">[Complete if in-scope]</td><td style="color:var(--gold)">[Assign]</td></tr><tr><td>Workday (HR/Payroll)</td><td style="color:var(--gold)">[Yes/No]</td><td style="color:var(--gold)">[Your rationale]</td><td style="color:var(--gold)">[Complete if in-scope]</td><td style="color:var(--gold)">[Assign]</td></tr><tr><td>ServiceNow (Ticketing)</td><td style="color:var(--gold)">[Yes/No]</td><td style="color:var(--gold)">[Your rationale]</td><td style="color:var(--gold)">[Complete if in-scope]</td><td style="color:var(--gold)">[Assign]</td></tr></table></div></div>
+
+  <!-- BUDGET -->
+  <div class="modal" id="m-budget"><div class="modal-hd"><div class="modal-title">IT Audit Function Budget Template — FY2025</div><button class="btn-close" onclick="closeMod('m-budget')">✕</button></div><div class="modal-body"><table class="doc-tbl"><tr><th>Category</th><th>FY2024 Actual</th><th>FY2025 Budget</th><th>Variance</th><th>Justification</th></tr><tr><td>Personnel — Salaries</td><td>$1,650,000</td><td style="color:var(--gold)">[Complete]</td><td style="color:var(--gold)">[+/- $]</td><td style="color:var(--gold)">[Justify if &gt;$50K change]</td></tr><tr><td>Personnel — Benefits (22%)</td><td>$363,000</td><td style="color:var(--gold)">[Complete]</td><td style="color:var(--gold)"></td><td></td></tr><tr><td>Professional Development &amp; CPE</td><td>$28,000</td><td style="color:var(--gold)">[Complete]</td><td style="color:var(--gold)"></td><td style="color:var(--gold)"></td></tr><tr><td>Certifications &amp; Exam Fees</td><td>$12,000</td><td style="color:var(--gold)">[Complete]</td><td style="color:var(--gold)"></td><td style="color:var(--gold)"></td></tr><tr><td>Audit Management Software</td><td>$45,000</td><td style="color:var(--gold)">[Complete]</td><td style="color:var(--gold)"></td><td style="color:var(--gold)"></td></tr><tr><td>Travel &amp; Accommodation</td><td>$38,000</td><td style="color:var(--gold)">[Complete]</td><td style="color:var(--gold)"></td><td style="color:var(--gold)"></td></tr><tr><td>External Co-Sourcing</td><td>$85,000</td><td style="color:var(--gold)">[Complete]</td><td style="color:var(--gold)"></td><td style="color:var(--gold)">[Justify — new AI/cloud specialist?]</td></tr><tr><td>Contingency Reserve (5%)</td><td>$110,000</td><td style="color:var(--gold)">[Complete]</td><td style="color:var(--gold)"></td><td></td></tr><tr><td><strong>TOTAL</strong></td><td><strong>$2,331,000</strong></td><td style="color:var(--gold)"><strong>~$2,400,000</strong></td><td style="color:var(--gold)"></td><td></td></tr></table></div></div>
+
+  <!-- CERTIFICATE MODAL -->
+  <div class="modal" id="m-cert"><div class="modal-hd"><div class="modal-title">Certificate of Completion</div><button class="btn-close" onclick="closeMod('m-cert')">✕</button></div><div class="modal-body"><div class="cert-box"><div class="cert-seal">🏅</div><div class="cert-head">NovaBridge Academy · IT Audit Skillternship<br>Certificate of Completion</div><div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--text-dim);letter-spacing:.1em;margin-bottom:1.25rem">This certifies that</div><div class="cert-person" id="cert-person">—</div><div class="cert-role" id="cert-role-txt">—</div><div class="cert-body">has successfully completed all simulation tasks, artifacts, and assessments for the IT Audit Skillternship program at the above level, demonstrating competency consistent with professional IT audit practice.</div><div id="cert-date" style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--text-dim);letter-spacing:.15em"></div><div class="cert-line"></div><div class="cert-sig">Eleanor Voss<small>Chief Audit Executive · NovaBridge Financial Services</small></div></div></div></div>
+
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ============================================================
+// SUPABASE CONFIG
+// ============================================================
+const SUPABASE_URL = 'https://abcdefgh.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxbmp1em95bXZzb3Bjcm5mZmprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMzM0MTEsImV4cCI6MjA4NzgwOTQxMX0.6YBL02hINe6pqtYVP14yLBrg2fGodtK0p9iSwpcm9gM';
+
+let sb = null;
+let state = { user: null, prog: {} };
+
+function initSupabase() {
+  try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); return true; }
+  catch(e) { console.warn('Supabase unavailable, using localStorage:', e); return false; }
+}
+
+async function loadProgress(userId, email) {
+  const cached = localStorage.getItem('nb_prog_' + email);
+  if (cached) try { state.prog = JSON.parse(cached); } catch(e) {}
+  if (sb) {
+    try {
+      const { data } = await sb.from('user_progress').select('progress').eq('user_id', userId).single();
+      if (data?.progress) { state.prog = data.progress; localStorage.setItem('nb_prog_' + email, JSON.stringify(state.prog)); }
+    } catch(e) {}
+  }
+}
+
+async function saveState() {
+  if (!state.user) return;
+  localStorage.setItem('nb_prog_' + state.user.email, JSON.stringify(state.prog));
+  if (sb && state.user.id) {
+    try {
+      await sb.from('user_progress').upsert(
+        { user_id: state.user.id, progress: state.prog, updated_at: new Date().toISOString() },
+        { onConflict: 'user_id' }
+      );
+    } catch(e) {}
+  }
+}
+
+// ============================================================
+// AUTH
+// ============================================================
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('f-login').style.display = id === 'login' ? 'block' : 'none';
+  document.getElementById('f-reg').style.display = id === 'reg' ? 'block' : 'none';
+  clearMsgs();
+}
+
+function clearMsgs() {
+  document.querySelectorAll('.msg').forEach(m => { m.className = 'msg'; m.textContent = ''; });
+}
+
+function showMsg(id, txt, type) {
+  const el = document.getElementById(id);
+  el.textContent = txt;
+  el.className = 'msg ' + type;
+}
+
+async function doLogin() {
+  const email = document.getElementById('l-email').value.trim().toLowerCase();
+  const pass = document.getElementById('l-pass').value;
+  if (!email || !pass) return showMsg('l-msg', 'Please fill in all fields.', 'err');
+  const btn = document.getElementById('l-btn');
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  if (sb) {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+    btn.disabled = false; btn.textContent = 'Access Program';
+    if (error) return showMsg('l-msg', error.message, 'err');
+    const u = data.user;
+    state.user = { id: u.id, email: u.email, name: u.user_metadata?.full_name || email.split('@')[0] };
+    await loadProgress(u.id, u.email);
+  } else {
+    const accounts = JSON.parse(localStorage.getItem('nb_accounts') || '{}');
+    btn.disabled = false; btn.textContent = 'Access Program';
+    if (!accounts[email]) return showMsg('l-msg', 'No account found. Please enroll first.', 'err');
+    if (accounts[email].pass !== btoa(pass)) return showMsg('l-msg', 'Incorrect password.', 'err');
+    state.user = { email, name: accounts[email].name };
+    const p = localStorage.getItem('nb_prog_' + email);
+    state.prog = p ? JSON.parse(p) : {};
+  }
+  launchApp();
+}
+
+async function doReg() {
+  const name = document.getElementById('r-name').value.trim();
+  const email = document.getElementById('r-email').value.trim().toLowerCase();
+  const pass = document.getElementById('r-pass').value;
+  if (!name || !email || !pass) return showMsg('r-msg', 'Please fill in all fields.', 'err');
+  if (pass.length < 6) return showMsg('r-msg', 'Password must be at least 6 characters.', 'err');
+  if (!email.includes('@')) return showMsg('r-msg', 'Please enter a valid email address.', 'err');
+  const btn = document.getElementById('r-btn');
+  btn.disabled = true; btn.textContent = 'Enrolling…';
+  if (sb) {
+    const { error } = await sb.auth.signUp({ email, password: pass, options: { data: { full_name: name } } });
+    btn.disabled = false; btn.textContent = 'Begin Enrollment';
+    if (error) return showMsg('r-msg', error.message, 'err');
+    showMsg('r-msg', '✓ Enrolled! Check your email to confirm your account, then sign in.', 'ok');
+  } else {
+    const accounts = JSON.parse(localStorage.getItem('nb_accounts') || '{}');
+    btn.disabled = false; btn.textContent = 'Begin Enrollment';
+    if (accounts[email]) return showMsg('r-msg', 'An account with this email already exists.', 'err');
+    accounts[email] = { name, pass: btoa(pass) };
+    localStorage.setItem('nb_accounts', JSON.stringify(accounts));
+    showMsg('r-msg', '✓ Enrolled! Switch to Sign In to access your account.', 'ok');
+  }
+}
+
+async function doLogout() {
+  await saveState();
+  if (sb) await sb.auth.signOut();
+  state = { user: null, prog: {} };
+  document.getElementById('app-screen').classList.remove('active');
+  document.getElementById('auth-screen').classList.add('active');
+}
+
+function launchApp() {
+  document.getElementById('auth-screen').classList.remove('active');
+  document.getElementById('app-screen').classList.add('active');
+  const first = state.user.name.split(' ')[0];
+  const init = state.user.name.charAt(0).toUpperCase();
+  document.getElementById('av').textContent = init;
+  document.getElementById('uname').textContent = state.user.name.toUpperCase();
+  document.getElementById('greet').textContent = 'Welcome back, ' + first;
+  refreshUI();
+  nav('dash');
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function nav(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
+  document.querySelectorAll('.nav-it').forEach(n => n.classList.remove('on'));
+
+  const viewId = 'v-' + id;
+  const v = document.getElementById(viewId);
+  if (v) v.classList.add('on');
+
+  const navMap = { dash: 0, l1: 1, l2: 2, l3: 3, l4: 4, hr: 5 };
+  const navItems = document.querySelectorAll('.nav-it');
+  if (navMap[id] !== undefined && navItems[navMap[id]]) navItems[navMap[id]].classList.add('on');
+
+  // Close any open task panel
+  document.querySelectorAll('.t-panel.open').forEach(p => p.classList.remove('open'));
+  currentPanel = null;
+}
+
+// ============================================================
+// TASK PANELS
+// ============================================================
+let currentPanel = null;
+
+function togglePanel(id) {
+  const panel = document.getElementById('tp-' + id);
+  if (!panel) { toast('Task details coming soon!'); return; }
+  if (currentPanel === id) {
+    panel.classList.remove('open');
+    document.getElementById('tr-' + id)?.classList.remove('open-task');
+    currentPanel = null;
+    return;
+  }
+  if (currentPanel) {
+    document.getElementById('tp-' + currentPanel)?.classList.remove('open');
+    document.getElementById('tr-' + currentPanel)?.classList.remove('open-task');
+  }
+  panel.classList.add('open');
+  document.getElementById('tr-' + id)?.classList.add('open-task');
+  currentPanel = id;
+  setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+}
+
+function closePanel(id) {
+  document.getElementById('tp-' + id)?.classList.remove('open');
+  document.getElementById('tr-' + id)?.classList.remove('open-task');
+  if (currentPanel === id) currentPanel = null;
+}
+
+// ============================================================
+// TASK COMPLETION
+// ============================================================
+function completeTask(taskId, isLevelEnd = false, levelKey = null, levelLabel = null) {
+  if (!state.prog.tasks) state.prog.tasks = [];
+  if (state.prog.tasks.includes(taskId)) { toast('Task already marked complete!'); return; }
+
+  state.prog.tasks.push(taskId);
+
+  if (isLevelEnd && levelKey) {
+    if (!state.prog.levels) state.prog.levels = [];
+    if (!state.prog.levels.includes(levelKey)) state.prog.levels.push(levelKey);
+    saveState();
+    refreshUI();
+    closePanel(taskId);
+    setTimeout(() => showCert(levelLabel), 400);
+    toast('🎉 Level complete! Certificate earned!');
+  } else {
+    saveState();
+    refreshUI();
+    closePanel(taskId);
+    toast('✓ Task marked complete');
+  }
+}
+
+// ============================================================
+// UI REFRESH
+// ============================================================
+function refreshUI() {
+  const tasks = state.prog.tasks || [];
+  const levels = state.prog.levels || [];
+
+  // Checkmarks
+  tasks.forEach(id => {
+    const ck = document.getElementById('ck-' + id);
+    if (ck) { ck.textContent = '✓'; ck.closest('.task-row')?.classList.add('done'); }
+  });
+
+  // Level unlocking
+  const unlocked = { l1: true, l2: levels.includes('l1'), l3: levels.includes('l2'), l4: levels.includes('l3') };
+  ['l1','l2','l3','l4'].forEach((l, i) => {
+    const n = i + 1;
+    const sn = document.getElementById('sn-' + l);
+    const lkEl = document.getElementById('lk' + n);
+    const openEl = document.getElementById('l' + n + '-open');
+    const lockEl = document.getElementById('l' + n + '-lock');
+    const cc = document.getElementById('cc-' + l);
+    const cs = document.getElementById('cs-' + l);
+
+    if (unlocked[l]) {
+      sn?.classList.remove('locked');
+      if (lkEl) lkEl.style.display = 'none';
+      if (openEl) openEl.style.display = 'block';
+      if (lockEl) lockEl.style.display = 'none';
+      if (cc) cc.classList.remove('lk');
+    }
+
+    if (cs) {
+      if (levels.includes(l)) {
+        cs.className = 'c-status s-done'; cs.textContent = '✓ Complete';
+      } else if (unlocked[l]) {
+        const lvlTasks = tasks.filter(t => t.startsWith(l + 't'));
+        cs.className = lvlTasks.length ? 'c-status s-prog' : 'c-status s-avail';
+        cs.textContent = lvlTasks.length ? 'In Progress' : 'Available';
+      }
+    }
+  });
+
+  // Stats
+  document.getElementById('s-lv').textContent = levels.length;
+  document.getElementById('s-tk').textContent = tasks.length;
+  document.getElementById('s-ar').textContent = state.prog.arts || 0;
+  document.getElementById('s-ct').textContent = levels.length;
+
+  // Progress bar (38 total tasks across all 4 levels)
+  const pct = Math.min(100, Math.round((tasks.length / 38) * 100));
+  document.getElementById('pfill').style.width = pct + '%';
+  document.getElementById('pct').textContent = pct + '%';
+}
+
+// ============================================================
+// MODALS
+// ============================================================
+function openMod(id) {
+  document.getElementById('overlay').classList.add('open');
+  document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+  const m = document.getElementById(id);
+  if (m) m.style.display = 'block';
+  if (!state.prog.arts) state.prog.arts = 0;
+  state.prog.arts++;
+  saveState();
+  refreshUI();
+}
+
+function closeMod(id) {
+  document.getElementById(id).style.display = 'none';
+  document.getElementById('overlay').classList.remove('open');
+}
+
+function overlayClick(e) {
+  if (e.target === document.getElementById('overlay')) {
+    document.getElementById('overlay').classList.remove('open');
+    document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+  }
+}
+
+function showCert(label) {
+  document.getElementById('cert-person').textContent = state.user?.name || '—';
+  document.getElementById('cert-role-txt').textContent = label || '—';
+  document.getElementById('cert-date').textContent = 'Issued ' + new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  openMod('m-cert');
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ============================================================
+// INIT — Supabase with localStorage fallback
+// ============================================================
+(async function init() {
+  initSupabase();
+
+  if (sb) {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session?.user) {
+        const u = session.user;
+        state.user = { id: u.id, email: u.email, name: u.user_metadata?.full_name || u.email.split('@')[0] };
+        await loadProgress(u.id, u.email);
+        launchApp();
+        return;
+      }
+      sb.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          const u = session.user;
+          state.user = { id: u.id, email: u.email, name: u.user_metadata?.full_name || u.email.split('@')[0] };
+          await loadProgress(u.id, u.email);
+          launchApp();
+        }
+      });
+    } catch(e) { console.warn('Supabase session check failed:', e); }
+  } else {
+    // Pure localStorage fallback
+    try {
+      const saved = localStorage.getItem('nb_user');
+      if (saved) {
+        state.user = JSON.parse(saved);
+        const p = localStorage.getItem('nb_prog_' + state.user.email);
+        state.prog = p ? JSON.parse(p) : {};
+        launchApp();
+        return;
+      }
+    } catch(e) {}
+  }
+
+  document.getElementById('auth-screen').classList.add('active');
+})();
+</script>
+</body>
+</html>
