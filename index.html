@@ -399,6 +399,7 @@ pre{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--text-mid);line-
         <div class="avatar" id="av">—</div>
         <div class="uname" id="uname">—</div>
       </div>
+      <button class="btn-out" onclick="openMod('m-setpwd')" style="border-color:var(--gold-dim);color:var(--gold);">Set Password</button>
       <button class="btn-out" onclick="doLogout()">Sign Out</button>
     </div>
   </header>
@@ -900,6 +901,21 @@ IT AUDIT MANAGER
   <!-- CERTIFICATE MODAL -->
   <div class="modal" id="m-cert"><div class="modal-hd"><div class="modal-title">Certificate of Completion</div><button class="btn-close" onclick="closeMod('m-cert')">✕</button></div><div class="modal-body"><div class="cert-box"><div class="cert-seal">🏅</div><div class="cert-head">NovaBridge Academy · IT Audit Skillternship<br>Certificate of Completion</div><div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--text-dim);letter-spacing:.1em;margin-bottom:1.25rem">This certifies that</div><div class="cert-person" id="cert-person">—</div><div class="cert-role" id="cert-role-txt">—</div><div class="cert-body">has successfully completed all simulation tasks, artifacts, and assessments for the IT Audit Skillternship program at the above level, demonstrating competency consistent with professional IT audit practice.</div><div id="cert-date" style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--text-dim);letter-spacing:.15em"></div><div class="cert-line"></div><div class="cert-sig">Eleanor Voss<small>Chief Audit Executive · NovaBridge Financial Services</small></div></div></div></div>
 
+  <!-- SET PASSWORD MODAL -->
+  <div class="modal" id="m-setpwd">
+    <div class="modal-hd">
+      <div class="modal-title">Set Your Password</div>
+      <button class="btn-close" onclick="closeMod('m-setpwd')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:.88rem;color:var(--text-mid);margin-bottom:1.25rem">Set a password so you can log in from any device using your email and password. You only need to do this once.</p>
+      <div class="form-grp"><label class="form-lbl">New Password (min 6 characters)</label><input class="form-inp" id="pwd-new" type="password" placeholder="••••••••"/></div>
+      <div class="form-grp"><label class="form-lbl">Confirm New Password</label><input class="form-inp" id="pwd-confirm" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doSetPassword()"/></div>
+      <button class="btn-gold" id="pwd-btn" onclick="doSetPassword()" style="margin-top:.5rem">Save Password</button>
+      <div class="msg" id="pwd-msg"></div>
+    </div>
+  </div>
+
 </div>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
@@ -1008,6 +1024,42 @@ async function doReg() {
     accounts[email] = { name, pass: btoa(pass) };
     localStorage.setItem('nb_accounts', JSON.stringify(accounts));
     showMsg('r-msg', '✓ Enrolled! Switch to Sign In to access your account.', 'ok');
+  }
+}
+
+async function doSetPassword() {
+  const np = document.getElementById('pwd-new').value;
+  const cp = document.getElementById('pwd-confirm').value;
+  const btn = document.getElementById('pwd-btn');
+  const msg = document.getElementById('pwd-msg');
+
+  msg.className = 'msg'; msg.textContent = '';
+
+  if (!np || !cp) { msg.textContent = 'Please fill in both fields.'; msg.className = 'msg err'; return; }
+  if (np.length < 6) { msg.textContent = 'Password must be at least 6 characters.'; msg.className = 'msg err'; return; }
+  if (np !== cp) { msg.textContent = 'Passwords do not match.'; msg.className = 'msg err'; return; }
+
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  if (sb) {
+    const { error } = await sb.auth.updateUser({ password: np });
+    btn.disabled = false; btn.textContent = 'Save Password';
+    if (error) { msg.textContent = error.message; msg.className = 'msg err'; return; }
+    msg.textContent = '✓ Password saved! You can now log in from any device using your email and this password.';
+    msg.className = 'msg ok';
+    document.getElementById('pwd-new').value = '';
+    document.getElementById('pwd-confirm').value = '';
+  } else {
+    // localStorage fallback
+    btn.disabled = false; btn.textContent = 'Save Password';
+    if (!state.user) return;
+    const accounts = JSON.parse(localStorage.getItem('nb_accounts') || '{}');
+    accounts[state.user.email] = { name: state.user.name, pass: btoa(np) };
+    localStorage.setItem('nb_accounts', JSON.stringify(accounts));
+    msg.textContent = '✓ Password saved!';
+    msg.className = 'msg ok';
+    document.getElementById('pwd-new').value = '';
+    document.getElementById('pwd-confirm').value = '';
   }
 }
 
