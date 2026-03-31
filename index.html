@@ -1406,34 +1406,34 @@ IT AUDIT MANAGER
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ============================================================
-// TASK LABELS — for AI grading context
+// TASK LABELS -- for AI grading context
 // ============================================================
 const TASK_LABELS = {
   l1t1: { title: 'Review Audit Charter & Engagement Letter', level: 'IT Auditor', criteria: 'Understanding of audit scope, authority, Trust Service Criteria, audit period, deliverables, and engagement team. Student must answer 5 specific comprehension questions accurately.' },
   l1t2: { title: 'Complete Risk & Control Matrix (RACM)', level: 'IT Auditor', criteria: 'Accurate completion of RACM rows for Access Management domain: appropriate control descriptions, correct control owners from HR roster, correct control types (Preventive/Detective/Corrective), correct frequencies, and alignment to SOC 2 CC6 criteria.' },
-  l1t3: { title: 'Conduct Walkthrough — Access Management', level: 'IT Auditor', criteria: 'Extraction of exactly 5 key controls from the Derek Okafor interview transcript. Each control must include: control name, description, evidence type, frequency, and any follow-up items.' },
+  l1t3: { title: 'Conduct Walkthrough -- Access Management', level: 'IT Auditor', criteria: 'Extraction of exactly 5 key controls from the Derek Okafor interview transcript. Each control must include: control name, description, evidence type, frequency, and any follow-up items.' },
   l1t4: { title: 'Execute Control Tests (5 Tests)', level: 'IT Auditor', criteria: 'Documented TOD and TOE for 5 controls. Must include: test procedures, population, sample size with rationale, items tested, and conclusions (Pass/Fail/Exception). Sampling methodology must be documented.' },
   l1t5: { title: 'Identify & Document Control Exceptions', level: 'IT Auditor', criteria: 'Three complete findings using the 5Cs framework: Criteria, Condition, Cause, Effect, and Recommendation. Each must be factually based on testing results and professionally written.' },
-  l1t6: { title: 'Draft Audit Memo — Work Performed Summary', level: 'IT Auditor', criteria: 'Professional audit memo covering: audit area/period, scope, methodology, testing results summary, exceptions referenced, conclusions, and open items. Tone must be formal and objective.' },
+  l1t6: { title: 'Draft Audit Memo -- Work Performed Summary', level: 'IT Auditor', criteria: 'Professional audit memo covering: audit area/period, scope, methodology, testing results summary, exceptions referenced, conclusions, and open items. Tone must be formal and objective.' },
   l1t7: { title: 'Workpaper Index & Tie-Out', level: 'IT Auditor', criteria: 'Completed workpaper index with reference numbers, preparers, reviewers, and dates. Tie-out confirms each tested control has supporting documentation. Missing items flagged with notes.' },
   l1t8: { title: 'Respond to Senior Reviewer Feedback', level: 'IT Auditor', criteria: 'Professional responses to all 4 review notes from Marcus Webb. Each response must: acknowledge the feedback, explain action taken, confirm what was updated. Tone must be professional and constructive.' },
   l2t1: { title: 'Review & Update Cloud Security Audit Program', level: 'Senior IT Auditor', criteria: 'Identifies 3+ areas inadequate for cloud environments. Adds 3 new control objectives for AWS: IAM role governance, CloudTrail logging, S3 bucket security. Framework mapping updated to CSA CCM v4.0 domain codes.' },
   l2t2: { title: 'Audit Planning Memo & Scoping Document', level: 'Senior IT Auditor', criteria: 'Complete planning memo with: 3-4 specific objectives, named systems in scope, out-of-scope items with rationale, risk assessment basis, resource plan with hours, and detailed 10-week timeline with milestones.' },
   l2t3: { title: 'Review Junior Auditor Workpaper (5 Errors)', level: 'Senior IT Auditor', criteria: 'All 5 embedded errors identified and documented with: specific issue cited, explanation of why it is incorrect, professional reviewer note. Tone must be constructive and educational.' },
   l2t4: { title: 'Stakeholder Meeting Follow-Up Email', level: 'Senior IT Auditor', criteria: 'Professional follow-up email covering: acknowledgment of meeting, summary of key discussion points, all action items with owners and due dates, and next check-in date. Tone must be formal.' },
-  l2t5: { title: 'Write 3 Audit Findings (High, Medium, Low)', level: 'Senior IT Auditor', criteria: 'Three complete findings — one each at High, Medium, Low severity — each with full 5Cs structure. Based on the specific fieldwork results provided (IAM roles, CloudTrail, S3 versioning). Professionally written.' },
+  l2t5: { title: 'Write 3 Audit Findings (High, Medium, Low)', level: 'Senior IT Auditor', criteria: 'Three complete findings -- one each at High, Medium, Low severity -- each with full 5Cs structure. Based on the specific fieldwork results provided (IAM roles, CloudTrail, S3 versioning). Professionally written.' },
   l2t6: { title: 'Build Management Action Plan (MAP) Tracker', level: 'Senior IT Auditor', criteria: 'MAP tracker with all 3 findings documented: management response statement, responsible owner from HR roster, target dates (High=30d, Medium=60d, Low=90d), and status.' },
   l2t7: { title: 'Scope Change Justification Memo', level: 'Senior IT Auditor', criteria: 'Formal scope change memo to audit manager covering: how/when discovery was made, risk justification, estimated additional hours, timeline impact, and recommendation. Professionally written.' },
-  l2t8: { title: 'Status Update — Talking Points & Slide Outline', level: 'Senior IT Auditor', criteria: 'Structured talking points and 4-slide deck outline covering: progress dashboard, findings summary, emerging risks (scope change), and next 2 weeks milestones. Executive-level tone.' },
+  l2t8: { title: 'Status Update -- Talking Points & Slide Outline', level: 'Senior IT Auditor', criteria: 'Structured talking points and 4-slide deck outline covering: progress dashboard, findings summary, emerging risks (scope change), and next 2 weeks milestones. Executive-level tone.' },
   l3t1: { title: 'Draft Annual IT Audit Plan (Risk-Based)', level: 'IT Audit Manager', criteria: 'Risk-based annual plan with 6 audit engagements. Each with: topic, risk rating (H/M/L) with rationale, estimated hours, assigned team member, and planned quarter. Addressed to CAE Eleanor Voss.' },
   l3t2: { title: 'Team Delegation Memos', level: 'IT Audit Manager', criteria: 'Three delegation memos for Marcus Webb, Aisha Nwosu, and Carlos Mendez. Each includes: assigned audit area, specific responsibilities, deliverables with due dates, quality standards, and monitoring approach.' },
   l3t3: { title: 'Escalate Finding to Critical', level: 'IT Audit Manager', criteria: 'Finding rewritten as Critical with updated Condition, Effect, and Recommendation reflecting severity. Escalation memo to CAE covers: situation, why escalating, recommended immediate actions.' },
-  l3t4: { title: 'Manage Difficult Auditee — Email De-escalation', level: 'IT Audit Manager', criteria: 'Professional email to Sandra Poole that: acknowledges concern respectfully, explains factual basis without backing down, proposes constructive path forward, maintains audit integrity. Not dismissive, not a pushover.' },
+  l3t4: { title: 'Manage Difficult Auditee -- Email De-escalation', level: 'IT Audit Manager', criteria: 'Professional email to Sandra Poole that: acknowledges concern respectfully, explains factual basis without backing down, proposes constructive path forward, maintains audit integrity. Not dismissive, not a pushover.' },
   l3t5: { title: 'Executive Presentation Talking Points', level: 'IT Audit Manager', criteria: '20-minute presentation talking points for CFO and CISO covering: opening summary, findings by severity, top 3 findings with business impact framing, management response status, remediation timeline, closing ask. Plus 3 anticipated objections with responses.' },
   l3t6: { title: 'Quality Assurance Review', level: 'IT Audit Manager', criteria: 'All 5 QA issues identified and documented with: specific QA criterion failed, description of deficiency, and required corrective action before report issuance.' },
   l3t7: { title: 'Final IT Audit Report', level: 'IT Audit Manager', criteria: 'Complete final report with: Executive Summary (overall rating, overview, key themes, findings count), Detailed Findings (all with 5Cs structure, management responses, due dates), and MAP Summary table.' },
-  l3t8: { title: 'Data Breach — Urgent Memo to CAE', level: 'IT Audit Manager', criteria: 'Urgent memo to CAE within 2 hours covering: what happened and notification time, audit impact (scope/findings/timeline), recommended immediate actions, independence considerations, and decisions needed from CAE.' },
-  l3t9: { title: 'Performance Review — Marcus Webb', level: 'IT Audit Manager', criteria: 'Annual review with specific behavioral examples for each of 8 competencies. 3 SMART development goals. Recommended development path for FY2025. Balanced, fair, and constructive.' },
+  l3t8: { title: 'Data Breach -- Urgent Memo to CAE', level: 'IT Audit Manager', criteria: 'Urgent memo to CAE within 2 hours covering: what happened and notification time, audit impact (scope/findings/timeline), recommended immediate actions, independence considerations, and decisions needed from CAE.' },
+  l3t9: { title: 'Performance Review -- Marcus Webb', level: 'IT Audit Manager', criteria: 'Annual review with specific behavioral examples for each of 8 competencies. 3 SMART development goals. Recommended development path for FY2025. Balanced, fair, and constructive.' },
   l3t10: { title: 'IT Audit Function KPI Dashboard', level: 'IT Audit Manager', criteria: 'KPI dashboard for Q1-Q3 FY2024 covering: audit cycle time, findings by severity, MAP closure rate, utilization rate, CPE hours. Table format with management commentary identifying 2-3 trends.' },
   l4t1: { title: '3-Year IT Audit Strategic Roadmap', level: 'Senior Manager', criteria: '3-year roadmap (FY2025-2027) with: current state maturity assessment (1-5 scale, 6 capability areas), identified gaps, strategic objectives per year, key initiatives/milestones, resource implications, and alignment to digital transformation.' },
   l4t2: { title: 'Update Audit Methodology for Cloud & AI Risk', level: 'Senior Manager', criteria: 'Updates to 3 sections: Risk Assessment (cloud/AI risk universe), Audit Program Development (CSA CCM and NIST AI RMF guidance), Evidence Standards (cloud-native evidence types). Substantive, specific, and implementable.' },
@@ -1446,11 +1446,11 @@ const TASK_LABELS = {
   l4t9: { title: 'Lessons-Learned Facilitation Guide', level: 'Senior Manager', criteria: '90-minute session guide with: objectives, pre-session prep instructions, agenda with timing, 10-12 discussion questions across 4 themes, ground rules, action item template, and integration into next year planning.' },
   l4t10: { title: 'Balanced Scorecard', level: 'Senior Manager', criteria: 'Kaplan-Norton 4-perspective scorecard with 3 KPIs per perspective. Each KPI includes: name, definition, measurement method, target, and current baseline.' },
   l4t11: { title: 'AI Risk Thought Leadership Memo', level: 'Senior Manager', criteria: '2-page memo to CAE covering: AI risk landscape in financial services, NovaBridge AI usage/plans, audit implications, regulatory signals (OCC/SR 11-7), recommended AI audit capability approach, and 3 specific 12-month actions.' },
-  l4t12: { title: 'Annual Board Report — Capstone', level: 'Senior Manager', criteria: 'Complete annual report with all 7 sections: Executive Summary, Audit Coverage vs Plan, Key Themes/Systemic Risks, Regulatory Update, MAP Status, Function Performance KPIs, FY2025 Outlook. Plus 5-slide deck outline.' },
+  l4t12: { title: 'Annual Board Report -- Capstone', level: 'Senior Manager', criteria: 'Complete annual report with all 7 sections: Executive Summary, Audit Coverage vs Plan, Key Themes/Systemic Risks, Regulatory Update, MAP Status, Function Performance KPIs, FY2025 Outlook. Plus 5-slide deck outline.' },
 };
 
 // ============================================================
-// SUBMIT WORK — AI GRADING
+// SUBMIT WORK -- AI GRADING
 // ============================================================
 async function submitWork(taskId) {
   const textarea = document.getElementById('sub-' + taskId);
@@ -1467,7 +1467,7 @@ async function submitWork(taskId) {
   const task = TASK_LABELS[taskId];
   if (!task) { toast('Task not found.'); return; }
 
-  // Update attempt count — max 3
+  // Update attempt count -- max 3
   if (!state.prog.attempts) state.prog.attempts = {};
   if (!state.prog.attempts[taskId]) state.prog.attempts[taskId] = 0;
   if (state.prog.attempts[taskId] >= 3) {
@@ -1527,7 +1527,7 @@ Respond ONLY with valid JSON in this exact format (no markdown, no backticks):
 
     const score = Math.min(100, Math.max(0, Number(result.score) || 0));
     const pass = true; // Any submission completes the task
-    const cls = score >= 70 ? 'pass' : 'fail'; // Visual only — does not gate completion
+    const cls = score >= 70 ? 'pass' : 'fail'; // Visual only -- does not gate completion
 
     // Render feedback
     fbPanel.innerHTML = `
@@ -1539,10 +1539,10 @@ Respond ONLY with valid JSON in this exact format (no markdown, no backticks):
         </div>
       </div>
       <div class="fb-bar"><div class="fb-bar-fill ${cls}" style="width:${score}%"></div></div>
-      <div class="fb-section"><h4>Overall Assessment</h4><p>${result.summary || '—'}</p></div>
-      <div class="fb-section"><h4>✓ Strengths</h4><p>${result.strengths || '—'}</p></div>
-      <div class="fb-section"><h4>△ Areas for Improvement</h4><p>${result.improvements || '—'}</p></div>
-      <div class="fb-section"><h4>${pass ? 'Next Steps' : 'How to Improve'}</h4><p>${result.guidance || '—'}</p></div>
+      <div class="fb-section"><h4>Overall Assessment</h4><p>${result.summary || '--'}</p></div>
+      <div class="fb-section"><h4>✓ Strengths</h4><p>${result.strengths || '--'}</p></div>
+      <div class="fb-section"><h4>△ Areas for Improvement</h4><p>${result.improvements || '--'}</p></div>
+      <div class="fb-section"><h4>${pass ? 'Next Steps' : 'How to Improve'}</h4><p>${result.guidance || '--'}</p></div>
       ${!pass ? '<p style='font-family:DM Mono,monospace;font-size:.62rem;color:var(--gold);margin-top:.5rem'>Revise your response above and resubmit to try again.</p>' : ''}
     `;
 
@@ -1570,7 +1570,7 @@ Respond ONLY with valid JSON in this exact format (no markdown, no backticks):
         state.prog.tasks.push(taskId);
         toast('✓ Task passed and marked complete!');
         // Check if this is a level-completing task
-        const levelEnders = { l1t8: ['l1','Level 1 — IT Auditor'], l2t8: ['l2','Level 2 — Senior IT Auditor'], l3t10: ['l3','Level 3 — IT Audit Manager'], l4t12: ['l4','Level 4 — IT Audit Senior Manager'] };
+        const levelEnders = { l1t8: ['l1','Level 1 -- IT Auditor'], l2t8: ['l2','Level 2 -- Senior IT Auditor'], l3t10: ['l3','Level 3 -- IT Audit Manager'], l4t12: ['l4','Level 4 -- IT Audit Senior Manager'] };
         if (levelEnders[taskId]) {
           const [lk, ll] = levelEnders[taskId];
           if (!state.prog.levels) state.prog.levels = [];
@@ -1583,7 +1583,7 @@ Respond ONLY with valid JSON in this exact format (no markdown, no backticks):
         toast('✓ Resubmission passed!');
       }
     } else {
-      toast('Submission reviewed — see feedback below. Score: ' + score + '/100');
+      toast('Submission reviewed -- see feedback below. Score: ' + score + '/100');
     }
 
     await saveState();
@@ -1592,7 +1592,7 @@ Respond ONLY with valid JSON in this exact format (no markdown, no backticks):
   } catch(err) {
     console.error(err);
     fbPanel.innerHTML = `<p style="color:var(--red-bright);font-family:'DM Mono',monospace;font-size:.7rem;">
-      ⚠ Grading unavailable right now. Your work has been saved — click "Mark Complete" below to continue, or try resubmitting.
+      ⚠ Grading unavailable right now. Your work has been saved -- click "Mark Complete" below to continue, or try resubmitting.
     </p>
     <button class="btn-complete" style="margin-top:.85rem" onclick="fallbackComplete('${taskId}')">Mark Complete Manually</button>`;
     // Re-add manual complete option on error
@@ -1634,7 +1634,7 @@ async function loadInstructorData() {
     const { data: progressRows, error } = await sb.from('user_progress').select('*');
     if (error) throw error;
 
-    // Fetch all users from auth (requires service role — we use anon so we get what we can)
+    // Fetch all users from auth (requires service role -- we use anon so we get what we can)
     // We'll use the email stored in progress or fall back to user_id
     allMenteeData = (progressRows || []).map(row => {
       const prog = row.progress || {};
@@ -1672,11 +1672,11 @@ function renderInstructor(data) {
   // Update stats
   const totalSubs = data.reduce((a,m) => a + m.submissions, 0);
   const scores = data.filter(m => m.avgScore !== null).map(m => m.avgScore);
-  const globalAvg = scores.length ? Math.round(scores.reduce((a,b) => a+b,0) / scores.length) : '—';
+  const globalAvg = scores.length ? Math.round(scores.reduce((a,b) => a+b,0) / scores.length) : '--';
 
   document.getElementById('is-mentees').textContent = data.length;
   document.getElementById('is-subs').textContent = totalSubs;
-  document.getElementById('is-avg').textContent = scores.length ? globalAvg + '%' : '—';
+  document.getElementById('is-avg').textContent = scores.length ? globalAvg + '%' : '--';
 
   const container = document.getElementById('inst-mentees');
   if (!data.length) {
@@ -1691,7 +1691,7 @@ function renderInstructor(data) {
 
   container.innerHTML = filtered.map((m, idx) => {
     const initials = m.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
-    const lastDate = m.lastActive ? new Date(m.lastActive).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) : '—';
+    const lastDate = m.lastActive ? new Date(m.lastActive).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) : '--';
 
     // Build submission entries
     const subEntries = Object.entries(m.subsByTask).flatMap(([tid, subs]) => 
@@ -1725,7 +1725,7 @@ function renderInstructor(data) {
         <div class="mentee-stats">
           <div class="mentee-stat"><strong>${m.tasks}/38</strong>Tasks</div>
           <div class="mentee-stat"><strong>${m.levels}/4</strong>Levels</div>
-          <div class="mentee-stat"><strong>${m.avgScore !== null ? m.avgScore + '%' : '—'}</strong>Avg Score</div>
+          <div class="mentee-stat"><strong>${m.avgScore !== null ? m.avgScore + '%' : '--'}</strong>Avg Score</div>
           <div class="mentee-stat"><strong>${m.pct}%</strong>Progress</div>
         </div>
       </div>
@@ -2088,8 +2088,8 @@ function overlayClick(e) {
 }
 
 function showCert(label) {
-  document.getElementById('cert-person').textContent = state.user?.name || '—';
-  document.getElementById('cert-role-txt').textContent = label || '—';
+  document.getElementById('cert-person').textContent = state.user?.name || '--';
+  document.getElementById('cert-role-txt').textContent = label || '--';
   document.getElementById('cert-date').textContent = 'Issued ' + new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
   openMod('m-cert');
 }
@@ -2105,7 +2105,7 @@ function toast(msg) {
 }
 
 // ============================================================
-// INIT — Supabase with localStorage fallback
+// INIT -- Supabase with localStorage fallback
 // ============================================================
 (async function init() {
   initSupabase();
