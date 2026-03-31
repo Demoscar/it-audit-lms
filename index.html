@@ -1404,70 +1404,198 @@ IT AUDIT MANAGER
 
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 // ============================================================
-// TASK LABELS -- for AI grading context
+// SUPABASE CONFIG
+// ============================================================
+var SUPABASE_URL = 'https://bqnjuzoymvsopcrnffjk.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxbmp1em95bXZzb3Bjcm5mZmprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMzM0MTEsImV4cCI6MjA4NzgwOTQxMX0.6YBL02hINe6pqtYVP14yLBrg2fGodtK0p9iSwpcm9gM';
+var sb = null;
+var state = { user: null, prog: {} };
+
+function initSupabase() {
+  try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); return true; }
+  catch(e) { console.warn('Supabase unavailable:', e); return false; }
+}
+async function loadProgress(userId, email) {
+  var cached = localStorage.getItem('nb_prog_' + email);
+  if (cached) { try { state.prog = JSON.parse(cached); } catch(e) {} }
+  if (sb) {
+    try {
+      var res = await sb.from('user_progress').select('progress').eq('user_id', userId).single();
+      if (res.data && res.data.progress) { state.prog = res.data.progress; localStorage.setItem('nb_prog_' + email, JSON.stringify(state.prog)); }
+    } catch(e) {}
+  }
+}
+async function saveState() {
+  if (!state.user) return;
+  localStorage.setItem('nb_prog_' + state.user.email, JSON.stringify(state.prog));
+  if (sb && state.user.id) {
+    try { await sb.from('user_progress').upsert({ user_id: state.user.id, progress: state.prog, updated_at: new Date().toISOString() }, { onConflict: 'user_id' }); }
+    catch(e) {}
+  }
+}
+
+// ============================================================
+// AUTH
+// ============================================================
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('on'); });
+  btn.classList.add('on');
+  document.getElementById('f-login').style.display = id === 'login' ? 'block' : 'none';
+  document.getElementById('f-reg').style.display = id === 'reg' ? 'block' : 'none';
+  clearMsgs();
+}
+function clearMsgs() {
+  document.querySelectorAll('.msg').forEach(function(m) { m.className = 'msg'; m.textContent = ''; });
+}
+function showMsg(id, txt, type) {
+  var el = document.getElementById(id); el.textContent = txt; el.className = 'msg ' + type;
+}
+async function doLogin() {
+  var email = document.getElementById('l-email').value.trim().toLowerCase();
+  var pass = document.getElementById('l-pass').value;
+  if (!email || !pass) return showMsg('l-msg', 'Please fill in all fields.', 'err');
+  var btn = document.getElementById('l-btn');
+  btn.disabled = true; btn.textContent = 'Signing in...';
+  if (sb) {
+    var res = await sb.auth.signInWithPassword({ email: email, password: pass });
+    btn.disabled = false; btn.textContent = 'Access Program';
+    if (res.error) return showMsg('l-msg', res.error.message, 'err');
+    var u = res.data.user;
+    state.user = { id: u.id, email: u.email, name: (u.user_metadata && u.user_metadata.full_name) ? u.user_metadata.full_name : email.split('@')[0] };
+    await loadProgress(u.id, u.email);
+  } else {
+    var accounts = JSON.parse(localStorage.getItem('nb_accounts') || '{}');
+    btn.disabled = false; btn.textContent = 'Access Program';
+    if (!accounts[email]) return showMsg('l-msg', 'No account found.', 'err');
+    if (accounts[email].pass !== btoa(pass)) return showMsg('l-msg', 'Incorrect password.', 'err');
+    state.user = { email: email, name: accounts[email].name };
+    var p = localStorage.getItem('nb_prog_' + email);
+    state.prog = p ? JSON.parse(p) : {};
+  }
+  launchApp();
+}
+async function doReg() {
+  var name = document.getElementById('r-name').value.trim();
+  var email = document.getElementById('r-email').value.trim().toLowerCase();
+  var pass = document.getElementById('r-pass').value;
+  if (!name || !email || !pass) return showMsg('r-msg', 'Please fill in all fields.', 'err');
+  if (pass.length < 6) return showMsg('r-msg', 'Password must be at least 6 characters.', 'err');
+  if (!email.includes('@')) return showMsg('r-msg', 'Please enter a valid email address.', 'err');
+  var btn = document.getElementById('r-btn');
+  btn.disabled = true; btn.textContent = 'Enrolling...';
+  if (sb) {
+    var res = await sb.auth.signUp({ email: email, password: pass, options: { data: { full_name: name } } });
+    btn.disabled = false; btn.textContent = 'Begin Enrollment';
+    if (res.error) return showMsg('r-msg', res.error.message, 'err');
+    showMsg('r-msg', 'Enrolled! Check your email to confirm, then sign in.', 'ok');
+  } else {
+    var accounts = JSON.parse(localStorage.getItem('nb_accounts') || '{}');
+    btn.disabled = false; btn.textContent = 'Begin Enrollment';
+    if (accounts[email]) return showMsg('r-msg', 'Account already exists.', 'err');
+    accounts[email] = { name: name, pass: btoa(pass) };
+    localStorage.setItem('nb_accounts', JSON.stringify(accounts));
+    showMsg('r-msg', 'Enrolled! Switch to Sign In.', 'ok');
+  }
+}
+async function doLogout() {
+  await saveState();
+  if (sb) await sb.auth.signOut();
+  state = { user: null, prog: {} };
+  document.getElementById('app-screen').classList.remove('active');
+  document.getElementById('auth-screen').classList.add('active');
+}
+async function doSetPassword() {
+  var np = document.getElementById('pwd-new').value;
+  var cp = document.getElementById('pwd-confirm').value;
+  var btn = document.getElementById('pwd-btn');
+  var msg = document.getElementById('pwd-msg');
+  msg.className = 'msg'; msg.textContent = '';
+  if (!np || !cp) { msg.textContent = 'Please fill in both fields.'; msg.className = 'msg err'; return; }
+  if (np.length < 6) { msg.textContent = 'Password must be at least 6 characters.'; msg.className = 'msg err'; return; }
+  if (np !== cp) { msg.textContent = 'Passwords do not match.'; msg.className = 'msg err'; return; }
+  btn.disabled = true; btn.textContent = 'Saving...';
+  if (sb) {
+    var res = await sb.auth.updateUser({ password: np });
+    btn.disabled = false; btn.textContent = 'Save Password';
+    if (res.error) { msg.textContent = res.error.message; msg.className = 'msg err'; return; }
+    msg.textContent = 'Password saved! You can now log in from any device.';
+    msg.className = 'msg ok';
+    document.getElementById('pwd-new').value = '';
+    document.getElementById('pwd-confirm').value = '';
+  } else {
+    btn.disabled = false; btn.textContent = 'Save Password';
+    if (!state.user) return;
+    var accounts = JSON.parse(localStorage.getItem('nb_accounts') || '{}');
+    accounts[state.user.email] = { name: state.user.name, pass: btoa(np) };
+    localStorage.setItem('nb_accounts', JSON.stringify(accounts));
+    msg.textContent = 'Password saved!'; msg.className = 'msg ok';
+  }
+}
+
+// ============================================================
+// TASK LABELS
 // ============================================================
 const TASK_LABELS = {
-  l1t1: { title: 'Review Audit Charter & Engagement Letter', level: 'IT Auditor', criteria: 'Understanding of audit scope, authority, Trust Service Criteria, audit period, deliverables, and engagement team. Student must answer 5 specific comprehension questions accurately.' },
-  l1t2: { title: 'Complete Risk & Control Matrix (RACM)', level: 'IT Auditor', criteria: 'Accurate completion of RACM rows for Access Management domain: appropriate control descriptions, correct control owners from HR roster, correct control types (Preventive/Detective/Corrective), correct frequencies, and alignment to SOC 2 CC6 criteria.' },
-  l1t3: { title: 'Conduct Walkthrough -- Access Management', level: 'IT Auditor', criteria: 'Extraction of exactly 5 key controls from the Derek Okafor interview transcript. Each control must include: control name, description, evidence type, frequency, and any follow-up items.' },
+  l1t1: { title: 'Review Audit Charter and Engagement Letter', level: 'IT Auditor', criteria: 'Understanding of audit scope, authority, Trust Service Criteria, audit period, deliverables, and engagement team. Student must answer 5 specific comprehension questions accurately.' },
+  l1t2: { title: 'Complete Risk and Control Matrix (RACM)', level: 'IT Auditor', criteria: 'Accurate completion of RACM rows for Access Management domain: appropriate control descriptions, correct control owners from HR roster, correct control types (Preventive/Detective/Corrective), correct frequencies, and alignment to SOC 2 CC6 criteria.' },
+  l1t3: { title: 'Conduct Walkthrough - Access Management', level: 'IT Auditor', criteria: 'Extraction of exactly 5 key controls from the Derek Okafor interview transcript. Each control must include: control name, description, evidence type, frequency, and any follow-up items.' },
   l1t4: { title: 'Execute Control Tests (5 Tests)', level: 'IT Auditor', criteria: 'Documented TOD and TOE for 5 controls. Must include: test procedures, population, sample size with rationale, items tested, and conclusions (Pass/Fail/Exception). Sampling methodology must be documented.' },
-  l1t5: { title: 'Identify & Document Control Exceptions', level: 'IT Auditor', criteria: 'Three complete findings using the 5Cs framework: Criteria, Condition, Cause, Effect, and Recommendation. Each must be factually based on testing results and professionally written.' },
-  l1t6: { title: 'Draft Audit Memo -- Work Performed Summary', level: 'IT Auditor', criteria: 'Professional audit memo covering: audit area/period, scope, methodology, testing results summary, exceptions referenced, conclusions, and open items. Tone must be formal and objective.' },
-  l1t7: { title: 'Workpaper Index & Tie-Out', level: 'IT Auditor', criteria: 'Completed workpaper index with reference numbers, preparers, reviewers, and dates. Tie-out confirms each tested control has supporting documentation. Missing items flagged with notes.' },
+  l1t5: { title: 'Identify and Document Control Exceptions', level: 'IT Auditor', criteria: 'Three complete findings using the 5Cs framework: Criteria, Condition, Cause, Effect, and Recommendation. Each must be factually based on testing results and professionally written.' },
+  l1t6: { title: 'Draft Audit Memo - Work Performed Summary', level: 'IT Auditor', criteria: 'Professional audit memo covering: audit area/period, scope, methodology, testing results summary, exceptions referenced, conclusions, and open items. Tone must be formal and objective.' },
+  l1t7: { title: 'Workpaper Index and Tie-Out', level: 'IT Auditor', criteria: 'Completed workpaper index with reference numbers, preparers, reviewers, and dates. Tie-out confirms each tested control has supporting documentation. Missing items flagged with notes.' },
   l1t8: { title: 'Respond to Senior Reviewer Feedback', level: 'IT Auditor', criteria: 'Professional responses to all 4 review notes from Marcus Webb. Each response must: acknowledge the feedback, explain action taken, confirm what was updated. Tone must be professional and constructive.' },
-  l2t1: { title: 'Review & Update Cloud Security Audit Program', level: 'Senior IT Auditor', criteria: 'Identifies 3+ areas inadequate for cloud environments. Adds 3 new control objectives for AWS: IAM role governance, CloudTrail logging, S3 bucket security. Framework mapping updated to CSA CCM v4.0 domain codes.' },
-  l2t2: { title: 'Audit Planning Memo & Scoping Document', level: 'Senior IT Auditor', criteria: 'Complete planning memo with: 3-4 specific objectives, named systems in scope, out-of-scope items with rationale, risk assessment basis, resource plan with hours, and detailed 10-week timeline with milestones.' },
+  l2t1: { title: 'Review and Update Cloud Security Audit Program', level: 'Senior IT Auditor', criteria: 'Identifies 3+ areas inadequate for cloud environments. Adds 3 new control objectives for AWS: IAM role governance, CloudTrail logging, S3 bucket security. Framework mapping updated to CSA CCM v4.0 domain codes.' },
+  l2t2: { title: 'Audit Planning Memo and Scoping Document', level: 'Senior IT Auditor', criteria: 'Complete planning memo with: 3-4 specific objectives, named systems in scope, out-of-scope items with rationale, risk assessment basis, resource plan with hours, and detailed 10-week timeline with milestones.' },
   l2t3: { title: 'Review Junior Auditor Workpaper (5 Errors)', level: 'Senior IT Auditor', criteria: 'All 5 embedded errors identified and documented with: specific issue cited, explanation of why it is incorrect, professional reviewer note. Tone must be constructive and educational.' },
   l2t4: { title: 'Stakeholder Meeting Follow-Up Email', level: 'Senior IT Auditor', criteria: 'Professional follow-up email covering: acknowledgment of meeting, summary of key discussion points, all action items with owners and due dates, and next check-in date. Tone must be formal.' },
-  l2t5: { title: 'Write 3 Audit Findings (High, Medium, Low)', level: 'Senior IT Auditor', criteria: 'Three complete findings -- one each at High, Medium, Low severity -- each with full 5Cs structure. Based on the specific fieldwork results provided (IAM roles, CloudTrail, S3 versioning). Professionally written.' },
+  l2t5: { title: 'Write 3 Audit Findings (High, Medium, Low)', level: 'Senior IT Auditor', criteria: 'Three complete findings one each at High, Medium, Low severity each with full 5Cs structure. Based on the specific fieldwork results provided (IAM roles, CloudTrail, S3 versioning). Professionally written.' },
   l2t6: { title: 'Build Management Action Plan (MAP) Tracker', level: 'Senior IT Auditor', criteria: 'MAP tracker with all 3 findings documented: management response statement, responsible owner from HR roster, target dates (High=30d, Medium=60d, Low=90d), and status.' },
   l2t7: { title: 'Scope Change Justification Memo', level: 'Senior IT Auditor', criteria: 'Formal scope change memo to audit manager covering: how/when discovery was made, risk justification, estimated additional hours, timeline impact, and recommendation. Professionally written.' },
-  l2t8: { title: 'Status Update -- Talking Points & Slide Outline', level: 'Senior IT Auditor', criteria: 'Structured talking points and 4-slide deck outline covering: progress dashboard, findings summary, emerging risks (scope change), and next 2 weeks milestones. Executive-level tone.' },
+  l2t8: { title: 'Status Update - Talking Points and Slide Outline', level: 'Senior IT Auditor', criteria: 'Structured talking points and 4-slide deck outline covering: progress dashboard, findings summary, emerging risks (scope change), and next 2 weeks milestones. Executive-level tone.' },
   l3t1: { title: 'Draft Annual IT Audit Plan (Risk-Based)', level: 'IT Audit Manager', criteria: 'Risk-based annual plan with 6 audit engagements. Each with: topic, risk rating (H/M/L) with rationale, estimated hours, assigned team member, and planned quarter. Addressed to CAE Eleanor Voss.' },
   l3t2: { title: 'Team Delegation Memos', level: 'IT Audit Manager', criteria: 'Three delegation memos for Marcus Webb, Aisha Nwosu, and Carlos Mendez. Each includes: assigned audit area, specific responsibilities, deliverables with due dates, quality standards, and monitoring approach.' },
   l3t3: { title: 'Escalate Finding to Critical', level: 'IT Audit Manager', criteria: 'Finding rewritten as Critical with updated Condition, Effect, and Recommendation reflecting severity. Escalation memo to CAE covers: situation, why escalating, recommended immediate actions.' },
-  l3t4: { title: 'Manage Difficult Auditee -- Email De-escalation', level: 'IT Audit Manager', criteria: 'Professional email to Sandra Poole that: acknowledges concern respectfully, explains factual basis without backing down, proposes constructive path forward, maintains audit integrity. Not dismissive, not a pushover.' },
+  l3t4: { title: 'Manage Difficult Auditee - Email De-escalation', level: 'IT Audit Manager', criteria: 'Professional email to Sandra Poole that: acknowledges concern respectfully, explains factual basis without backing down, proposes constructive path forward, maintains audit integrity. Not dismissive, not a pushover.' },
   l3t5: { title: 'Executive Presentation Talking Points', level: 'IT Audit Manager', criteria: '20-minute presentation talking points for CFO and CISO covering: opening summary, findings by severity, top 3 findings with business impact framing, management response status, remediation timeline, closing ask. Plus 3 anticipated objections with responses.' },
   l3t6: { title: 'Quality Assurance Review', level: 'IT Audit Manager', criteria: 'All 5 QA issues identified and documented with: specific QA criterion failed, description of deficiency, and required corrective action before report issuance.' },
   l3t7: { title: 'Final IT Audit Report', level: 'IT Audit Manager', criteria: 'Complete final report with: Executive Summary (overall rating, overview, key themes, findings count), Detailed Findings (all with 5Cs structure, management responses, due dates), and MAP Summary table.' },
-  l3t8: { title: 'Data Breach -- Urgent Memo to CAE', level: 'IT Audit Manager', criteria: 'Urgent memo to CAE within 2 hours covering: what happened and notification time, audit impact (scope/findings/timeline), recommended immediate actions, independence considerations, and decisions needed from CAE.' },
-  l3t9: { title: 'Performance Review -- Marcus Webb', level: 'IT Audit Manager', criteria: 'Annual review with specific behavioral examples for each of 8 competencies. 3 SMART development goals. Recommended development path for FY2025. Balanced, fair, and constructive.' },
+  l3t8: { title: 'Data Breach - Urgent Memo to CAE', level: 'IT Audit Manager', criteria: 'Urgent memo to CAE within 2 hours covering: what happened and notification time, audit impact (scope/findings/timeline), recommended immediate actions, independence considerations, and decisions needed from CAE.' },
+  l3t9: { title: 'Performance Review - Marcus Webb', level: 'IT Audit Manager', criteria: 'Annual review with specific behavioral examples for each of 8 competencies. 3 SMART development goals. Recommended development path for FY2025. Balanced, fair, and constructive.' },
   l3t10: { title: 'IT Audit Function KPI Dashboard', level: 'IT Audit Manager', criteria: 'KPI dashboard for Q1-Q3 FY2024 covering: audit cycle time, findings by severity, MAP closure rate, utilization rate, CPE hours. Table format with management commentary identifying 2-3 trends.' },
-  l4t1: { title: '3-Year IT Audit Strategic Roadmap', level: 'Senior Manager', criteria: '3-year roadmap (FY2025-2027) with: current state maturity assessment (1-5 scale, 6 capability areas), identified gaps, strategic objectives per year, key initiatives/milestones, resource implications, and alignment to digital transformation.' },
-  l4t2: { title: 'Update Audit Methodology for Cloud & AI Risk', level: 'Senior Manager', criteria: 'Updates to 3 sections: Risk Assessment (cloud/AI risk universe), Audit Program Development (CSA CCM and NIST AI RMF guidance), Evidence Standards (cloud-native evidence types). Substantive, specific, and implementable.' },
+  l4t1: { title: '3-Year IT Audit Strategic Roadmap', level: 'Senior Manager', criteria: '3-year roadmap FY2025-2027 with: current state maturity assessment (1-5 scale, 6 capability areas), identified gaps, strategic objectives per year, key initiatives/milestones, resource implications, and alignment to digital transformation.' },
+  l4t2: { title: 'Update Audit Methodology for Cloud and AI Risk', level: 'Senior Manager', criteria: 'Updates to 3 sections: Risk Assessment (cloud/AI risk universe), Audit Program Development (CSA CCM and NIST AI RMF guidance), Evidence Standards (cloud-native evidence types). Substantive, specific, and implementable.' },
   l4t3: { title: 'Audit Committee Brief', level: 'Senior Manager', criteria: 'Board memo (max 2 pages) for non-technical audience and 5-slide deck outline for Dr. Shirley Watkins. Slides: Year-in-Review, Top IT Risks, Regulatory Posture, 3-Year Roadmap, Requests/Decisions.' },
   l4t4: { title: 'OCC Exam Readiness', level: 'Senior Manager', criteria: 'Formal OCC readiness response letter from CAE confirming readiness and point-of-contact. Evidence request log covering 6 required areas with owners from HR roster and due dates.' },
   l4t5: { title: 'SOX ITGC Scoping', level: 'Senior Manager', criteria: 'Scoping for all 6 systems with: SOX in-scope determination with rationale, COSO/assertion mapping, ITGC domains to test, and testing lead assigned. Must include FiServe as in-scope.' },
   l4t6: { title: 'IT Audit Function Budget ($2.4M)', level: 'Senior Manager', criteria: 'Budget across all categories totaling ~$2.4M. Prior year variance analysis for changes over $50K. All categories addressed including co-sourcing with justification.' },
   l4t7: { title: 'Team Training Curriculum', level: 'Senior Manager', criteria: '12-month curriculum for all 3 levels: certifications with timeline, technical skills modules, soft skills training, mentoring structure, Q1-Q4 milestone checkpoints. Specific and actionable.' },
-  l4t8: { title: 'Ethics & Independence Issue', level: 'Senior Manager', criteria: 'Escalation memo covering: nature of impairment, timeline of events, Fatima's disclosure circumstances, severity assessment, recommended immediate actions (remove from engagement, disclosure), and long-term safeguards.' },
+  l4t8: { title: 'Ethics and Independence Issue', level: 'Senior Manager', criteria: 'Escalation memo covering: nature of impairment, timeline of events, disclosure circumstances, severity assessment, recommended immediate actions (remove from engagement, disclosure), and long-term safeguards.' },
   l4t9: { title: 'Lessons-Learned Facilitation Guide', level: 'Senior Manager', criteria: '90-minute session guide with: objectives, pre-session prep instructions, agenda with timing, 10-12 discussion questions across 4 themes, ground rules, action item template, and integration into next year planning.' },
   l4t10: { title: 'Balanced Scorecard', level: 'Senior Manager', criteria: 'Kaplan-Norton 4-perspective scorecard with 3 KPIs per perspective. Each KPI includes: name, definition, measurement method, target, and current baseline.' },
   l4t11: { title: 'AI Risk Thought Leadership Memo', level: 'Senior Manager', criteria: '2-page memo to CAE covering: AI risk landscape in financial services, NovaBridge AI usage/plans, audit implications, regulatory signals (OCC/SR 11-7), recommended AI audit capability approach, and 3 specific 12-month actions.' },
-  l4t12: { title: 'Annual Board Report -- Capstone', level: 'Senior Manager', criteria: 'Complete annual report with all 7 sections: Executive Summary, Audit Coverage vs Plan, Key Themes/Systemic Risks, Regulatory Update, MAP Status, Function Performance KPIs, FY2025 Outlook. Plus 5-slide deck outline.' },
+  l4t12: { title: 'Annual Board Report - Capstone', level: 'Senior Manager', criteria: 'Complete annual report with all 7 sections: Executive Summary, Audit Coverage vs Plan, Key Themes/Systemic Risks, Regulatory Update, MAP Status, Function Performance KPIs, FY2025 Outlook. Plus 5-slide deck outline.' }
 };
 
 // ============================================================
-// SUBMIT WORK -- AI GRADING
+// SUBMIT WORK - AI GRADING
 // ============================================================
 async function submitWork(taskId) {
-  const textarea = document.getElementById('sub-' + taskId);
-  const btn = document.getElementById('sbtn-' + taskId);
-  const fbPanel = document.getElementById('fb-' + taskId);
-  const attemptsEl = document.getElementById('sattempts-' + taskId);
+  var textarea = document.getElementById('sub-' + taskId);
+  var btn = document.getElementById('sbtn-' + taskId);
+  var fbPanel = document.getElementById('fb-' + taskId);
+  var attemptsEl = document.getElementById('sattempts-' + taskId);
 
-  const submission = textarea.value.trim();
+  var submission = textarea.value.trim();
   if (!submission || submission.length < 50) {
     toast('Please write a more detailed response before submitting (minimum 50 characters).');
     return;
   }
 
-  const task = TASK_LABELS[taskId];
+  var task = TASK_LABELS[taskId];
   if (!task) { toast('Task not found.'); return; }
 
-  // Update attempt count -- max 3
   if (!state.prog.attempts) state.prog.attempts = {};
   if (!state.prog.attempts[taskId]) state.prog.attempts[taskId] = 0;
   if (state.prog.attempts[taskId] >= 3) {
@@ -1476,84 +1604,63 @@ async function submitWork(taskId) {
     return;
   }
   state.prog.attempts[taskId]++;
-  const attempt = state.prog.attempts[taskId];
-  const attemptsLeft = 3 - attempt;
-  if (attemptsEl) attemptsEl.textContent = `Attempt ${attempt} of 3`;
+  var attempt = state.prog.attempts[taskId];
+  var attemptsLeft = 3 - attempt;
+  if (attemptsEl) attemptsEl.textContent = 'Attempt ' + attempt + ' of 3';
 
-  // Show loading state
   btn.disabled = true;
   fbPanel.className = 'fb-panel show';
-  fbPanel.innerHTML = `<div style="font-family:'DM Mono',monospace;font-size:.7rem;color:var(--gold);letter-spacing:.1em;">
-    &#8691; Reviewing your submission<span class="thinking-dots"></span>
-  </div>`;
+  fbPanel.innerHTML = '<div style="font-family:\'DM Mono\',monospace;font-size:.7rem;color:var(--gold);letter-spacing:.1em;">Reviewing your submission...</div>';
+
+  var prompt = 'You are an experienced IT Audit Senior Manager at NovaBridge Financial Services grading a student submission for the IT Audit Skillternship program.\n\nTASK: ' + task.title + '\nLEVEL: ' + task.level + '\nGRADING CRITERIA: ' + task.criteria + '\n\nSTUDENT SUBMISSION:\n' + submission + '\n\nGrade this submission on a scale of 0-100. Respond ONLY with valid JSON in this exact format (no markdown, no backticks):\n{\n  "score": <number 0-100>,\n  "pass": true,\n  "summary": "<2-3 sentence overall assessment>",\n  "strengths": "<specific things done well>",\n  "improvements": "<specific things missing or needing improvement>",\n  "guidance": "<concrete actionable advice>"\n}';
 
   try {
-    const prompt = `You are an experienced IT Audit Senior Manager at NovaBridge Financial Services grading a student submission for the IT Audit Skillternship program.
-
-TASK: ${task.title}
-LEVEL: ${task.level}
-GRADING CRITERIA: ${task.criteria}
-
-STUDENT SUBMISSION:
-${submission}
-
-Grade this submission on a scale of 0-100. A score of 70 or above is a PASS. Below 70 is FAIL and requires resubmission.
-
-Respond ONLY with valid JSON in this exact format (no markdown, no backticks):
-{
-  "score": <number 0-100>,
-  "pass": <true or false>,
-  "summary": "<2-3 sentence overall assessment>",
-  "strengths": "<specific things done well, referencing their actual submission>",
-  "improvements": "<specific things missing or needing improvement, tied to the criteria>",
-  "guidance": "<concrete actionable advice for improvement or next steps if passing>"
-}`;
-
-    const response = await fetch('https://bqnjuzoymvsopcrnffjk.supabase.co/functions/v1/grade-submission', {
+    var response = await fetch('https://bqnjuzoymvsopcrnffjk.supabase.co/functions/v1/grade-submission', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
       },
-      body: JSON.stringify({ prompt })
+      body: JSON.stringify({ prompt: prompt })
     });
 
     if (!response.ok) throw new Error('Grading service error ' + response.status);
-    const data = await response.json();
-    const raw = data.content?.[0]?.text || '{}';
-    let result;
+    var data = await response.json();
+    var raw = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : '{}';
+    var result;
     try { result = JSON.parse(raw.replace(/```json|```/g, '').trim()); }
     catch(e) { throw new Error('Could not parse AI response'); }
 
-    const score = Math.min(100, Math.max(0, Number(result.score) || 0));
-    const pass = true; // Any submission completes the task
-    const cls = score >= 70 ? 'pass' : 'fail'; // Visual only -- does not gate completion
+    var score = Math.min(100, Math.max(0, Number(result.score) || 0));
+    var cls = score >= 70 ? 'pass' : 'fail';
+    var ratingLabel = score >= 70 ? 'STRONG' : score >= 50 ? 'DEVELOPING' : 'NEEDS WORK';
 
-    // Render feedback
-    fbPanel.innerHTML = `
-      <div class="fb-score-row">
-        <div class="fb-score ${cls}">${score}<span style="font-size:1rem;font-weight:400">/100</span></div>
-        <div>
-          <div class="fb-badge ${cls}">${score >= 70 ? '&#10003; STRONG' : score >= 50 ? '&#9651; DEVELOPING' : '&#9675; NEEDS WORK'}</div>
-          <div style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--text-dim);margin-top:.35rem;letter-spacing:.08em">Attempt ${attempt} of 3 &middot; Task marked complete on submission</div>
-        </div>
-      </div>
-      <div class="fb-bar"><div class="fb-bar-fill ${cls}" style="width:${score}%"></div></div>
-      <div class="fb-section"><h4>Overall Assessment</h4><p>${result.summary || '--'}</p></div>
-      <div class="fb-section"><h4>&#10003; Strengths</h4><p>${result.strengths || '--'}</p></div>
-      <div class="fb-section"><h4>&#9651; Areas for Improvement</h4><p>${result.improvements || '--'}</p></div>
-      <div class="fb-section"><h4>${pass ? 'Next Steps' : 'How to Improve'}</h4><p>${result.guidance || '--'}</p></div>
-      ${!pass ? '<p style='font-family:DM Mono,monospace;font-size:.62rem;color:var(--gold);margin-top:.5rem'>Revise your response above and resubmit to try again.</p>' : ''}
-    `;
+    var attemptsLeftMsg = attemptsLeft > 0
+      ? '<p style="font-family:\'DM Mono\',monospace;font-size:.62rem;color:var(--gold);margin-top:.5rem">You have ' + attemptsLeft + ' attempt' + (attemptsLeft !== 1 ? 's' : '') + ' remaining - you can resubmit to improve your score.</p>'
+      : '<p style="font-family:\'DM Mono\',monospace;font-size:.62rem;color:var(--text-dim);margin-top:.5rem">All 3 attempts used. Review the feedback and move to the next task.</p>';
 
-    // Save submission to Supabase
-    const submissionRecord = {
+    fbPanel.innerHTML =
+      '<div class="fb-score-row">' +
+        '<div class="fb-score ' + cls + '">' + score + '<span style="font-size:1rem;font-weight:400">/100</span></div>' +
+        '<div>' +
+          '<div class="fb-badge ' + cls + '">' + ratingLabel + '</div>' +
+          '<div style="font-family:\'DM Mono\',monospace;font-size:.55rem;color:var(--text-dim);margin-top:.35rem;letter-spacing:.08em">Attempt ' + attempt + ' of 3 - Task marked complete on submission</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="fb-bar"><div class="fb-bar-fill ' + cls + '" style="width:' + score + '%"></div></div>' +
+      '<div class="fb-section"><h4>Overall Assessment</h4><p>' + (result.summary || '--') + '</p></div>' +
+      '<div class="fb-section"><h4>Strengths</h4><p>' + (result.strengths || '--') + '</p></div>' +
+      '<div class="fb-section"><h4>Areas for Improvement</h4><p>' + (result.improvements || '--') + '</p></div>' +
+      '<div class="fb-section"><h4>Guidance</h4><p>' + (result.guidance || '--') + '</p></div>' +
+      attemptsLeftMsg;
+
+    var submissionRecord = {
       task_id: taskId,
       task_title: task.title,
       level: task.level,
       submission: submission,
       score: score,
-      pass: pass,
+      pass: true,
       attempt: attempt,
       feedback: result,
       submitted_at: new Date().toISOString()
@@ -1563,27 +1670,27 @@ Respond ONLY with valid JSON in this exact format (no markdown, no backticks):
     if (!state.prog.submissions[taskId]) state.prog.submissions[taskId] = [];
     state.prog.submissions[taskId].push(submissionRecord);
 
-    // If passing, mark task complete
-    if (pass) {
-      if (!state.prog.tasks) state.prog.tasks = [];
-      if (!state.prog.tasks.includes(taskId)) {
-        state.prog.tasks.push(taskId);
-        toast('&#10003; Task passed and marked complete!');
-        // Check if this is a level-completing task
-        const levelEnders = { l1t8: ['l1','Level 1 -- IT Auditor'], l2t8: ['l2','Level 2 -- Senior IT Auditor'], l3t10: ['l3','Level 3 -- IT Audit Manager'], l4t12: ['l4','Level 4 -- IT Audit Senior Manager'] };
-        if (levelEnders[taskId]) {
-          const [lk, ll] = levelEnders[taskId];
-          if (!state.prog.levels) state.prog.levels = [];
-          if (!state.prog.levels.includes(lk)) {
-            state.prog.levels.push(lk);
-            setTimeout(() => showCert(ll), 600);
-          }
+    if (!state.prog.tasks) state.prog.tasks = [];
+    if (!state.prog.tasks.includes(taskId)) {
+      state.prog.tasks.push(taskId);
+      toast('Task submitted and marked complete!');
+      var levelEnders = {
+        l1t8: ['l1', 'Level 1 - IT Auditor'],
+        l2t8: ['l2', 'Level 2 - Senior IT Auditor'],
+        l3t10: ['l3', 'Level 3 - IT Audit Manager'],
+        l4t12: ['l4', 'Level 4 - IT Audit Senior Manager']
+      };
+      if (levelEnders[taskId]) {
+        var lk = levelEnders[taskId][0];
+        var ll = levelEnders[taskId][1];
+        if (!state.prog.levels) state.prog.levels = [];
+        if (!state.prog.levels.includes(lk)) {
+          state.prog.levels.push(lk);
+          setTimeout(function() { showCert(ll); }, 600);
         }
-      } else {
-        toast('&#10003; Resubmission passed!');
       }
     } else {
-      toast('Submission reviewed -- see feedback below. Score: ' + score + '/100');
+      toast('Resubmission complete!');
     }
 
     await saveState();
@@ -1591,16 +1698,16 @@ Respond ONLY with valid JSON in this exact format (no markdown, no backticks):
 
   } catch(err) {
     console.error(err);
-    fbPanel.innerHTML = `<p style="color:var(--red-bright);font-family:'DM Mono',monospace;font-size:.7rem;">
-      &#9888; Grading unavailable right now. Your work has been saved -- click "Mark Complete" below to continue, or try resubmitting.
-    </p>
-    <button class="btn-complete" style="margin-top:.85rem" onclick="fallbackComplete('${taskId}')">Mark Complete Manually</button>`;
-    // Re-add manual complete option on error
+    fbPanel.innerHTML =
+      '<p style="color:var(--red-bright);font-family:\'DM Mono\',monospace;font-size:.7rem;">' +
+      'Grading unavailable right now. Your work has been saved. Click the button below to continue.' +
+      '</p>' +
+      '<button class="btn-complete" style="margin-top:.85rem" onclick="fallbackComplete(\'' + taskId + '\')">Mark Complete Manually</button>';
   } finally {
-    const used = state.prog.attempts?.[taskId] || 0;
+    var used = (state.prog.attempts && state.prog.attempts[taskId]) ? state.prog.attempts[taskId] : 0;
     btn.disabled = used >= 3;
     if (btn.disabled) btn.textContent = 'Max Attempts Reached';
-    if (attemptsEl) attemptsEl.textContent = used >= 3 ? 'All 3 attempts used' : `Attempt ${used} of 3`;
+    if (attemptsEl) attemptsEl.textContent = used >= 3 ? 'All 3 attempts used' : 'Attempt ' + used + ' of 3';
   }
 }
 
@@ -1617,303 +1724,126 @@ function fallbackComplete(taskId) {
 // ============================================================
 // INSTRUCTOR DASHBOARD
 // ============================================================
-let allMenteeData = [];
-let currentFilter = 'all';
+var allMenteeData = [];
+var currentFilter = 'all';
 
 async function loadInstructorData() {
-  const container = document.getElementById('inst-mentees');
+  var container = document.getElementById('inst-mentees');
   if (!sb) {
     container.innerHTML = '<div class="no-subs">Instructor dashboard requires Supabase connection.</div>';
     return;
   }
-
   container.innerHTML = '<div class="no-subs">Loading mentee data...</div>';
-
   try {
-    // Fetch all user progress records
-    const { data: progressRows, error } = await sb.from('user_progress').select('*');
-    if (error) throw error;
+    var res = await sb.from('user_progress').select('*');
+    if (res.error) throw res.error;
+    var progressRows = res.data || [];
 
-    // Fetch all users from auth (requires service role -- we use anon so we get what we can)
-    // We'll use the email stored in progress or fall back to user_id
-    allMenteeData = (progressRows || []).map(row => {
-      const prog = row.progress || {};
-      const tasks = prog.tasks || [];
-      const submissions = prog.submissions || {};
-      const allSubs = Object.values(submissions).flat();
-      const scores = allSubs.filter(s => s.score !== undefined).map(s => s.score);
-      const avgScore = scores.length ? Math.round(scores.reduce((a,b) => a+b, 0) / scores.length) : null;
-      const levels = prog.levels || [];
-
+    allMenteeData = progressRows.map(function(row) {
+      var prog = row.progress || {};
+      var tasks = prog.tasks || [];
+      var submissions = prog.submissions || {};
+      var allSubs = Object.values(submissions).reduce(function(acc, arr) { return acc.concat(arr); }, []);
+      var scores = allSubs.filter(function(s) { return s.score !== undefined; }).map(function(s) { return s.score; });
+      var avgScore = scores.length ? Math.round(scores.reduce(function(a, b) { return a + b; }, 0) / scores.length) : null;
       return {
         userId: row.user_id,
         email: prog.email || row.user_id,
         name: prog.name || 'Mentee',
         tasks: tasks.length,
-        levels: levels.length,
+        levels: (prog.levels || []).length,
         submissions: allSubs.length,
-        avgScore,
+        avgScore: avgScore,
         lastActive: row.updated_at,
         subsByTask: submissions,
         pct: Math.round((tasks.length / 38) * 100)
       };
     });
-
-    // Also try to get user emails from auth.users (may not work with anon key)
     renderInstructor(allMenteeData);
-
   } catch(e) {
     console.error(e);
-    container.innerHTML = `<div class="no-subs">Could not load data: ${e.message}</div>`;
+    container.innerHTML = '<div class="no-subs">Could not load data: ' + e.message + '</div>';
   }
 }
 
 function renderInstructor(data) {
-  // Update stats
-  const totalSubs = data.reduce((a,m) => a + m.submissions, 0);
-  const scores = data.filter(m => m.avgScore !== null).map(m => m.avgScore);
-  const globalAvg = scores.length ? Math.round(scores.reduce((a,b) => a+b,0) / scores.length) : '--';
+  var totalSubs = data.reduce(function(a, m) { return a + m.submissions; }, 0);
+  var scores = data.filter(function(m) { return m.avgScore !== null; }).map(function(m) { return m.avgScore; });
+  var globalAvg = scores.length ? Math.round(scores.reduce(function(a, b) { return a + b; }, 0) / scores.length) : '--';
 
   document.getElementById('is-mentees').textContent = data.length;
   document.getElementById('is-subs').textContent = totalSubs;
   document.getElementById('is-avg').textContent = scores.length ? globalAvg + '%' : '--';
 
-  const container = document.getElementById('inst-mentees');
+  var container = document.getElementById('inst-mentees');
   if (!data.length) {
     container.innerHTML = '<div class="no-subs">No mentee data found yet.</div>';
     return;
   }
 
-  // Filter
-  let filtered = data;
-  if (currentFilter === 'active') filtered = data.filter(m => m.tasks > 0);
-  if (currentFilter === 'stuck') filtered = data.filter(m => m.avgScore !== null && m.avgScore < 70);
+  var filtered = data;
+  if (currentFilter === 'active') filtered = data.filter(function(m) { return m.tasks > 0; });
+  if (currentFilter === 'stuck') filtered = data.filter(function(m) { return m.avgScore !== null && m.avgScore < 70; });
 
-  container.innerHTML = filtered.map((m, idx) => {
-    const initials = m.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
-    const lastDate = m.lastActive ? new Date(m.lastActive).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) : '--';
+  container.innerHTML = filtered.map(function(m, idx) {
+    var initials = m.name.split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
+    var lastDate = m.lastActive ? new Date(m.lastActive).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '--';
 
-    // Build submission entries
-    const subEntries = Object.entries(m.subsByTask).flatMap(([tid, subs]) => 
-      subs.map(s => ({ tid, ...s }))
-    ).sort((a,b) => new Date(b.submitted_at) - new Date(a.submitted_at)).slice(0, 10);
+    var subEntries = Object.entries(m.subsByTask).reduce(function(acc, entry) {
+      return acc.concat(entry[1].map(function(s) { return Object.assign({ tid: entry[0] }, s); }));
+    }, []).sort(function(a, b) { return new Date(b.submitted_at) - new Date(a.submitted_at); }).slice(0, 10);
 
-    const subHtml = subEntries.length ? subEntries.map(s => {
-      const cls = s.pass ? 'pass' : 'fail';
-      const dt = s.submitted_at ? new Date(s.submitted_at).toLocaleDateString('en-GB', {day:'numeric',month:'short'}) : '';
-      const preview = s.submission ? s.submission.slice(0, 120) + '...' : '';
-      return `<div class="sub-entry">
-        <div class="sub-entry-hd">
-          <div class="sub-task">${s.task_title || s.tid}</div>
-          <div style="display:flex;align-items:center;gap:.65rem">
-            <span style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--text-dim)">${dt} &middot; Attempt ${s.attempt}</span>
-            <span class="sub-score-tag ${cls}">${s.score}/100</span>
-          </div>
-        </div>
-        <div class="sub-preview">${preview}</div>
-        ${s.feedback ? `<div style="margin-top:.5rem;font-size:.78rem;color:var(--text-dim)"><strong style="color:var(--text-mid)">AI Feedback:</strong> ${(s.feedback.summary || '').slice(0,200)}...</div>` : ''}
-      </div>`;
+    var subHtml = subEntries.length ? subEntries.map(function(s) {
+      var cls = s.pass ? 'pass' : 'fail';
+      var dt = s.submitted_at ? new Date(s.submitted_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '';
+      var preview = s.submission ? s.submission.slice(0, 120) + '...' : '';
+      var feedbackSnippet = (s.feedback && s.feedback.summary) ? '<div style="margin-top:.5rem;font-size:.78rem;color:var(--text-dim)"><strong style="color:var(--text-mid)">AI Feedback:</strong> ' + s.feedback.summary.slice(0, 200) + '...</div>' : '';
+      return '<div class="sub-entry">' +
+        '<div class="sub-entry-hd">' +
+          '<div class="sub-task">' + (s.task_title || s.tid) + '</div>' +
+          '<div style="display:flex;align-items:center;gap:.65rem">' +
+            '<span style="font-family:\'DM Mono\',monospace;font-size:.58rem;color:var(--text-dim)">' + dt + ' - Attempt ' + s.attempt + '</span>' +
+            '<span class="sub-score-tag ' + cls + '">' + s.score + '/100</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="sub-preview">' + preview + '</div>' +
+        feedbackSnippet +
+        '</div>';
     }).join('') : '<div class="no-subs" style="padding:.85rem">No submissions yet.</div>';
 
-    return `<div class="mentee-card">
-      <div class="mentee-hd" onclick="toggleMentee(${idx})">
-        <div class="mentee-av">${initials}</div>
-        <div>
-          <div class="mentee-name">${m.name}</div>
-          <div class="mentee-email">${m.email} &middot; Last active: ${lastDate}</div>
-        </div>
-        <div class="mentee-stats">
-          <div class="mentee-stat"><strong>${m.tasks}/38</strong>Tasks</div>
-          <div class="mentee-stat"><strong>${m.levels}/4</strong>Levels</div>
-          <div class="mentee-stat"><strong>${m.avgScore !== null ? m.avgScore + '%' : '--'}</strong>Avg Score</div>
-          <div class="mentee-stat"><strong>${m.pct}%</strong>Progress</div>
-        </div>
-      </div>
-      <div class="mentee-prog"><div class="mentee-prog-fill" style="width:${m.pct}%"></div></div>
-      <div class="mentee-body" id="mb-${idx}">
-        <div class="sec-head" style="margin-bottom:.85rem">Recent Submissions</div>
-        ${subHtml}
-      </div>
-    </div>`;
+    return '<div class="mentee-card">' +
+      '<div class="mentee-hd" onclick="toggleMentee(' + idx + ')">' +
+        '<div class="mentee-av">' + initials + '</div>' +
+        '<div>' +
+          '<div class="mentee-name">' + m.name + '</div>' +
+          '<div class="mentee-email">' + m.email + ' - Last active: ' + lastDate + '</div>' +
+        '</div>' +
+        '<div class="mentee-stats">' +
+          '<div class="mentee-stat"><strong>' + m.tasks + '/38</strong>Tasks</div>' +
+          '<div class="mentee-stat"><strong>' + m.levels + '/4</strong>Levels</div>' +
+          '<div class="mentee-stat"><strong>' + (m.avgScore !== null ? m.avgScore + '%' : '--') + '</strong>Avg Score</div>' +
+          '<div class="mentee-stat"><strong>' + m.pct + '%</strong>Progress</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="mentee-prog"><div class="mentee-prog-fill" style="width:' + m.pct + '%"></div></div>' +
+      '<div class="mentee-body" id="mb-' + idx + '">' +
+        '<div class="sec-head" style="margin-bottom:.85rem">Recent Submissions</div>' +
+        subHtml +
+      '</div>' +
+    '</div>';
   }).join('');
 }
 
 function toggleMentee(idx) {
-  const el = document.getElementById('mb-' + idx);
+  var el = document.getElementById('mb-' + idx);
   if (el) el.classList.toggle('open');
 }
 
 function filterMentees(filter, btn) {
   currentFilter = filter;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('on'); });
   btn.classList.add('on');
   renderInstructor(allMenteeData);
-}
-
-// ============================================================
-// SUPABASE CONFIG
-// ============================================================
-const SUPABASE_URL = 'https://bqnjuzoymvsopcrnffjk.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxbmp1em95bXZzb3Bjcm5mZmprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMzM0MTEsImV4cCI6MjA4NzgwOTQxMX0.6YBL02hINe6pqtYVP14yLBrg2fGodtK0p9iSwpcm9gM';
-
-let sb = null;
-let state = { user: null, prog: {} };
-
-function initSupabase() {
-  try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); return true; }
-  catch(e) { console.warn('Supabase unavailable, using localStorage:', e); return false; }
-}
-
-async function loadProgress(userId, email) {
-  const cached = localStorage.getItem('nb_prog_' + email);
-  if (cached) try { state.prog = JSON.parse(cached); } catch(e) {}
-  if (sb) {
-    try {
-      const { data } = await sb.from('user_progress').select('progress').eq('user_id', userId).single();
-      if (data?.progress) { state.prog = data.progress; localStorage.setItem('nb_prog_' + email, JSON.stringify(state.prog)); }
-    } catch(e) {}
-  }
-}
-
-async function saveState() {
-  if (!state.user) return;
-  localStorage.setItem('nb_prog_' + state.user.email, JSON.stringify(state.prog));
-  if (sb && state.user.id) {
-    try {
-      await sb.from('user_progress').upsert(
-        { user_id: state.user.id, progress: state.prog, updated_at: new Date().toISOString() },
-        { onConflict: 'user_id' }
-      );
-    } catch(e) {}
-  }
-}
-
-// ============================================================
-// AUTH
-// ============================================================
-function switchTab(id, btn) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
-  document.getElementById('f-login').style.display = id === 'login' ? 'block' : 'none';
-  document.getElementById('f-reg').style.display = id === 'reg' ? 'block' : 'none';
-  clearMsgs();
-}
-
-function clearMsgs() {
-  document.querySelectorAll('.msg').forEach(m => { m.className = 'msg'; m.textContent = ''; });
-}
-
-function showMsg(id, txt, type) {
-  const el = document.getElementById(id);
-  el.textContent = txt;
-  el.className = 'msg ' + type;
-}
-
-async function doLogin() {
-  const email = document.getElementById('l-email').value.trim().toLowerCase();
-  const pass = document.getElementById('l-pass').value;
-  if (!email || !pass) return showMsg('l-msg', 'Please fill in all fields.', 'err');
-  const btn = document.getElementById('l-btn');
-  btn.disabled = true; btn.textContent = 'Signing in...';
-  if (sb) {
-    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-    btn.disabled = false; btn.textContent = 'Access Program';
-    if (error) return showMsg('l-msg', error.message, 'err');
-    const u = data.user;
-    state.user = { id: u.id, email: u.email, name: u.user_metadata?.full_name || email.split('@')[0] };
-    await loadProgress(u.id, u.email);
-  } else {
-    const accounts = JSON.parse(localStorage.getItem('nb_accounts') || '{}');
-    btn.disabled = false; btn.textContent = 'Access Program';
-    if (!accounts[email]) return showMsg('l-msg', 'No account found. Please enroll first.', 'err');
-    if (accounts[email].pass !== btoa(pass)) return showMsg('l-msg', 'Incorrect password.', 'err');
-    state.user = { email, name: accounts[email].name };
-    const p = localStorage.getItem('nb_prog_' + email);
-    state.prog = p ? JSON.parse(p) : {};
-  }
-  launchApp();
-}
-
-async function doReg() {
-  const name = document.getElementById('r-name').value.trim();
-  const email = document.getElementById('r-email').value.trim().toLowerCase();
-  const pass = document.getElementById('r-pass').value;
-  if (!name || !email || !pass) return showMsg('r-msg', 'Please fill in all fields.', 'err');
-  if (pass.length < 6) return showMsg('r-msg', 'Password must be at least 6 characters.', 'err');
-  if (!email.includes('@')) return showMsg('r-msg', 'Please enter a valid email address.', 'err');
-  const btn = document.getElementById('r-btn');
-  btn.disabled = true; btn.textContent = 'Enrolling...';
-  if (sb) {
-    const { error } = await sb.auth.signUp({ email, password: pass, options: { data: { full_name: name } } });
-    btn.disabled = false; btn.textContent = 'Begin Enrollment';
-    if (error) return showMsg('r-msg', error.message, 'err');
-    showMsg('r-msg', '&#10003; Enrolled! Check your email to confirm your account, then sign in.', 'ok');
-  } else {
-    const accounts = JSON.parse(localStorage.getItem('nb_accounts') || '{}');
-    btn.disabled = false; btn.textContent = 'Begin Enrollment';
-    if (accounts[email]) return showMsg('r-msg', 'An account with this email already exists.', 'err');
-    accounts[email] = { name, pass: btoa(pass) };
-    localStorage.setItem('nb_accounts', JSON.stringify(accounts));
-    showMsg('r-msg', '&#10003; Enrolled! Switch to Sign In to access your account.', 'ok');
-  }
-}
-
-async function doSetPassword() {
-  const np = document.getElementById('pwd-new').value;
-  const cp = document.getElementById('pwd-confirm').value;
-  const btn = document.getElementById('pwd-btn');
-  const msg = document.getElementById('pwd-msg');
-
-  msg.className = 'msg'; msg.textContent = '';
-
-  if (!np || !cp) { msg.textContent = 'Please fill in both fields.'; msg.className = 'msg err'; return; }
-  if (np.length < 6) { msg.textContent = 'Password must be at least 6 characters.'; msg.className = 'msg err'; return; }
-  if (np !== cp) { msg.textContent = 'Passwords do not match.'; msg.className = 'msg err'; return; }
-
-  btn.disabled = true; btn.textContent = 'Saving...';
-
-  if (sb) {
-    const { error } = await sb.auth.updateUser({ password: np });
-    btn.disabled = false; btn.textContent = 'Save Password';
-    if (error) { msg.textContent = error.message; msg.className = 'msg err'; return; }
-    msg.textContent = '&#10003; Password saved! You can now log in from any device using your email and this password.';
-    msg.className = 'msg ok';
-    document.getElementById('pwd-new').value = '';
-    document.getElementById('pwd-confirm').value = '';
-  } else {
-    // localStorage fallback
-    btn.disabled = false; btn.textContent = 'Save Password';
-    if (!state.user) return;
-    const accounts = JSON.parse(localStorage.getItem('nb_accounts') || '{}');
-    accounts[state.user.email] = { name: state.user.name, pass: btoa(np) };
-    localStorage.setItem('nb_accounts', JSON.stringify(accounts));
-    msg.textContent = '&#10003; Password saved!';
-    msg.className = 'msg ok';
-    document.getElementById('pwd-new').value = '';
-    document.getElementById('pwd-confirm').value = '';
-  }
-}
-
-async function doLogout() {
-  await saveState();
-  if (sb) await sb.auth.signOut();
-  state = { user: null, prog: {} };
-  document.getElementById('app-screen').classList.remove('active');
-  document.getElementById('auth-screen').classList.add('active');
-}
-
-function launchApp() {
-  document.getElementById('auth-screen').classList.remove('active');
-  document.getElementById('app-screen').classList.add('active');
-  const first = state.user.name.split(' ')[0];
-  const init = state.user.name.charAt(0).toUpperCase();
-  document.getElementById('av').textContent = init;
-  document.getElementById('uname').textContent = state.user.name.toUpperCase();
-  document.getElementById('greet').textContent = 'Welcome back, ' + first;
-  // Store name and email in progress for instructor dashboard
-  if (!state.prog.name) { state.prog.name = state.user.name; state.prog.email = state.user.email; saveState(); }
-  refreshUI();
-  nav('dash');
 }
 
 // ============================================================
