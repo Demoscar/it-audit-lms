@@ -1484,7 +1484,7 @@ async function submitWork(taskId) {
   btn.disabled = true;
   fbPanel.className = 'fb-panel show';
   fbPanel.innerHTML = `<div style="font-family:'DM Mono',monospace;font-size:.7rem;color:var(--gold);letter-spacing:.1em;">
-    ⟳ Reviewing your submission<span class="thinking-dots"></span>
+    &#8691; Reviewing your submission<span class="thinking-dots"></span>
   </div>`;
 
   try {
@@ -1534,14 +1534,14 @@ Respond ONLY with valid JSON in this exact format (no markdown, no backticks):
       <div class="fb-score-row">
         <div class="fb-score ${cls}">${score}<span style="font-size:1rem;font-weight:400">/100</span></div>
         <div>
-          <div class="fb-badge ${cls}">${score >= 70 ? '✓ STRONG' : score >= 50 ? '△ DEVELOPING' : '○ NEEDS WORK'}</div>
-          <div style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--text-dim);margin-top:.35rem;letter-spacing:.08em">Attempt ${attempt} of 3 · Task marked complete on submission</div>
+          <div class="fb-badge ${cls}">${score >= 70 ? '&#10003; STRONG' : score >= 50 ? '&#9651; DEVELOPING' : '&#9675; NEEDS WORK'}</div>
+          <div style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--text-dim);margin-top:.35rem;letter-spacing:.08em">Attempt ${attempt} of 3 &middot; Task marked complete on submission</div>
         </div>
       </div>
       <div class="fb-bar"><div class="fb-bar-fill ${cls}" style="width:${score}%"></div></div>
       <div class="fb-section"><h4>Overall Assessment</h4><p>${result.summary || '--'}</p></div>
-      <div class="fb-section"><h4>✓ Strengths</h4><p>${result.strengths || '--'}</p></div>
-      <div class="fb-section"><h4>△ Areas for Improvement</h4><p>${result.improvements || '--'}</p></div>
+      <div class="fb-section"><h4>&#10003; Strengths</h4><p>${result.strengths || '--'}</p></div>
+      <div class="fb-section"><h4>&#9651; Areas for Improvement</h4><p>${result.improvements || '--'}</p></div>
       <div class="fb-section"><h4>${pass ? 'Next Steps' : 'How to Improve'}</h4><p>${result.guidance || '--'}</p></div>
       ${!pass ? '<p style='font-family:DM Mono,monospace;font-size:.62rem;color:var(--gold);margin-top:.5rem'>Revise your response above and resubmit to try again.</p>' : ''}
     `;
@@ -1568,7 +1568,7 @@ Respond ONLY with valid JSON in this exact format (no markdown, no backticks):
       if (!state.prog.tasks) state.prog.tasks = [];
       if (!state.prog.tasks.includes(taskId)) {
         state.prog.tasks.push(taskId);
-        toast('✓ Task passed and marked complete!');
+        toast('&#10003; Task passed and marked complete!');
         // Check if this is a level-completing task
         const levelEnders = { l1t8: ['l1','Level 1 -- IT Auditor'], l2t8: ['l2','Level 2 -- Senior IT Auditor'], l3t10: ['l3','Level 3 -- IT Audit Manager'], l4t12: ['l4','Level 4 -- IT Audit Senior Manager'] };
         if (levelEnders[taskId]) {
@@ -1580,7 +1580,7 @@ Respond ONLY with valid JSON in this exact format (no markdown, no backticks):
           }
         }
       } else {
-        toast('✓ Resubmission passed!');
+        toast('&#10003; Resubmission passed!');
       }
     } else {
       toast('Submission reviewed -- see feedback below. Score: ' + score + '/100');
@@ -1592,7 +1592,7 @@ Respond ONLY with valid JSON in this exact format (no markdown, no backticks):
   } catch(err) {
     console.error(err);
     fbPanel.innerHTML = `<p style="color:var(--red-bright);font-family:'DM Mono',monospace;font-size:.7rem;">
-      ⚠ Grading unavailable right now. Your work has been saved -- click "Mark Complete" below to continue, or try resubmitting.
+      &#9888; Grading unavailable right now. Your work has been saved -- click "Mark Complete" below to continue, or try resubmitting.
     </p>
     <button class="btn-complete" style="margin-top:.85rem" onclick="fallbackComplete('${taskId}')">Mark Complete Manually</button>`;
     // Re-add manual complete option on error
@@ -1627,7 +1627,7 @@ async function loadInstructorData() {
     return;
   }
 
-  container.innerHTML = '<div class="no-subs">Loading mentee data…</div>';
+  container.innerHTML = '<div class="no-subs">Loading mentee data...</div>';
 
   try {
     // Fetch all user progress records
@@ -1701,17 +1701,17 @@ function renderInstructor(data) {
     const subHtml = subEntries.length ? subEntries.map(s => {
       const cls = s.pass ? 'pass' : 'fail';
       const dt = s.submitted_at ? new Date(s.submitted_at).toLocaleDateString('en-GB', {day:'numeric',month:'short'}) : '';
-      const preview = s.submission ? s.submission.slice(0, 120) + '…' : '';
+      const preview = s.submission ? s.submission.slice(0, 120) + '...' : '';
       return `<div class="sub-entry">
         <div class="sub-entry-hd">
           <div class="sub-task">${s.task_title || s.tid}</div>
           <div style="display:flex;align-items:center;gap:.65rem">
-            <span style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--text-dim)">${dt} · Attempt ${s.attempt}</span>
+            <span style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--text-dim)">${dt} &middot; Attempt ${s.attempt}</span>
             <span class="sub-score-tag ${cls}">${s.score}/100</span>
           </div>
         </div>
         <div class="sub-preview">${preview}</div>
-        ${s.feedback ? `<div style="margin-top:.5rem;font-size:.78rem;color:var(--text-dim)"><strong style="color:var(--text-mid)">AI Feedback:</strong> ${(s.feedback.summary || '').slice(0,200)}…</div>` : ''}
+        ${s.feedback ? `<div style="margin-top:.5rem;font-size:.78rem;color:var(--text-dim)"><strong style="color:var(--text-mid)">AI Feedback:</strong> ${(s.feedback.summary || '').slice(0,200)}...</div>` : ''}
       </div>`;
     }).join('') : '<div class="no-subs" style="padding:.85rem">No submissions yet.</div>';
 
@@ -1720,7 +1720,7 @@ function renderInstructor(data) {
         <div class="mentee-av">${initials}</div>
         <div>
           <div class="mentee-name">${m.name}</div>
-          <div class="mentee-email">${m.email} · Last active: ${lastDate}</div>
+          <div class="mentee-email">${m.email} &middot; Last active: ${lastDate}</div>
         </div>
         <div class="mentee-stats">
           <div class="mentee-stat"><strong>${m.tasks}/38</strong>Tasks</div>
@@ -1814,7 +1814,7 @@ async function doLogin() {
   const pass = document.getElementById('l-pass').value;
   if (!email || !pass) return showMsg('l-msg', 'Please fill in all fields.', 'err');
   const btn = document.getElementById('l-btn');
-  btn.disabled = true; btn.textContent = 'Signing in…';
+  btn.disabled = true; btn.textContent = 'Signing in...';
   if (sb) {
     const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
     btn.disabled = false; btn.textContent = 'Access Program';
@@ -1842,19 +1842,19 @@ async function doReg() {
   if (pass.length < 6) return showMsg('r-msg', 'Password must be at least 6 characters.', 'err');
   if (!email.includes('@')) return showMsg('r-msg', 'Please enter a valid email address.', 'err');
   const btn = document.getElementById('r-btn');
-  btn.disabled = true; btn.textContent = 'Enrolling…';
+  btn.disabled = true; btn.textContent = 'Enrolling...';
   if (sb) {
     const { error } = await sb.auth.signUp({ email, password: pass, options: { data: { full_name: name } } });
     btn.disabled = false; btn.textContent = 'Begin Enrollment';
     if (error) return showMsg('r-msg', error.message, 'err');
-    showMsg('r-msg', '✓ Enrolled! Check your email to confirm your account, then sign in.', 'ok');
+    showMsg('r-msg', '&#10003; Enrolled! Check your email to confirm your account, then sign in.', 'ok');
   } else {
     const accounts = JSON.parse(localStorage.getItem('nb_accounts') || '{}');
     btn.disabled = false; btn.textContent = 'Begin Enrollment';
     if (accounts[email]) return showMsg('r-msg', 'An account with this email already exists.', 'err');
     accounts[email] = { name, pass: btoa(pass) };
     localStorage.setItem('nb_accounts', JSON.stringify(accounts));
-    showMsg('r-msg', '✓ Enrolled! Switch to Sign In to access your account.', 'ok');
+    showMsg('r-msg', '&#10003; Enrolled! Switch to Sign In to access your account.', 'ok');
   }
 }
 
@@ -1870,13 +1870,13 @@ async function doSetPassword() {
   if (np.length < 6) { msg.textContent = 'Password must be at least 6 characters.'; msg.className = 'msg err'; return; }
   if (np !== cp) { msg.textContent = 'Passwords do not match.'; msg.className = 'msg err'; return; }
 
-  btn.disabled = true; btn.textContent = 'Saving…';
+  btn.disabled = true; btn.textContent = 'Saving...';
 
   if (sb) {
     const { error } = await sb.auth.updateUser({ password: np });
     btn.disabled = false; btn.textContent = 'Save Password';
     if (error) { msg.textContent = error.message; msg.className = 'msg err'; return; }
-    msg.textContent = '✓ Password saved! You can now log in from any device using your email and this password.';
+    msg.textContent = '&#10003; Password saved! You can now log in from any device using your email and this password.';
     msg.className = 'msg ok';
     document.getElementById('pwd-new').value = '';
     document.getElementById('pwd-confirm').value = '';
@@ -1887,7 +1887,7 @@ async function doSetPassword() {
     const accounts = JSON.parse(localStorage.getItem('nb_accounts') || '{}');
     accounts[state.user.email] = { name: state.user.name, pass: btoa(np) };
     localStorage.setItem('nb_accounts', JSON.stringify(accounts));
-    msg.textContent = '✓ Password saved!';
+    msg.textContent = '&#10003; Password saved!';
     msg.className = 'msg ok';
     document.getElementById('pwd-new').value = '';
     document.getElementById('pwd-confirm').value = '';
@@ -1983,12 +1983,12 @@ function completeTask(taskId, isLevelEnd = false, levelKey = null, levelLabel = 
     refreshUI();
     closePanel(taskId);
     setTimeout(() => showCert(levelLabel), 400);
-    toast('🎉 Level complete! Certificate earned!');
+    toast(' Level complete! Certificate earned!');
   } else {
     saveState();
     refreshUI();
     closePanel(taskId);
-    toast('✓ Task marked complete');
+    toast('&#10003; Task marked complete');
   }
 }
 
@@ -2002,7 +2002,7 @@ function refreshUI() {
   // Checkmarks
   tasks.forEach(id => {
     const ck = document.getElementById('ck-' + id);
-    if (ck) { ck.textContent = '✓'; ck.closest('.task-row')?.classList.add('done'); }
+    if (ck) { ck.textContent = '&#10003;'; ck.closest('.task-row')?.classList.add('done'); }
   });
 
   // Level unlocking
@@ -2026,7 +2026,7 @@ function refreshUI() {
 
     if (cs) {
       if (levels.includes(l)) {
-        cs.className = 'c-status s-done'; cs.textContent = '✓ Complete';
+        cs.className = 'c-status s-done'; cs.textContent = '&#10003; Complete';
       } else if (unlocked[l]) {
         const lvlTasks = tasks.filter(t => t.startsWith(l + 't'));
         cs.className = lvlTasks.length ? 'c-status s-prog' : 'c-status s-avail';
