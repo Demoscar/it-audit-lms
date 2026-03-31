@@ -1509,17 +1509,16 @@ Respond ONLY with valid JSON in this exact format (no markdown, no backticks):
   "guidance": "<concrete actionable advice for improvement or next steps if passing>"
 }`;
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://bqnjuzoymvsopcrnffjk.supabase.co/functions/v1/grade-submission', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': ''
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
-      })
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+      },
+      body: JSON.stringify({ prompt })
     });
 
-    if (!response.ok) throw new Error('API error ' + response.status);
+    if (!response.ok) throw new Error('Grading service error ' + response.status);
     const data = await response.json();
     const raw = data.content?.[0]?.text || '{}';
     let result;
