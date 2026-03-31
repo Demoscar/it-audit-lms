@@ -1437,104 +1437,6 @@ async function saveState() {
 }
 
 // ============================================================
-// AUTH
-// ============================================================
-function switchTab(id, btn) {
-  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('on'); });
-  btn.classList.add('on');
-  document.getElementById('f-login').style.display = id === 'login' ? 'block' : 'none';
-  document.getElementById('f-reg').style.display = id === 'reg' ? 'block' : 'none';
-  clearMsgs();
-}
-function clearMsgs() {
-  document.querySelectorAll('.msg').forEach(function(m) { m.className = 'msg'; m.textContent = ''; });
-}
-function showMsg(id, txt, type) {
-  var el = document.getElementById(id); el.textContent = txt; el.className = 'msg ' + type;
-}
-async function doLogin() {
-  var email = document.getElementById('l-email').value.trim().toLowerCase();
-  var pass = document.getElementById('l-pass').value;
-  if (!email || !pass) return showMsg('l-msg', 'Please fill in all fields.', 'err');
-  var btn = document.getElementById('l-btn');
-  btn.disabled = true; btn.textContent = 'Signing in...';
-  if (sb) {
-    var res = await sb.auth.signInWithPassword({ email: email, password: pass });
-    btn.disabled = false; btn.textContent = 'Access Program';
-    if (res.error) return showMsg('l-msg', res.error.message, 'err');
-    var u = res.data.user;
-    state.user = { id: u.id, email: u.email, name: (u.user_metadata && u.user_metadata.full_name) ? u.user_metadata.full_name : email.split('@')[0] };
-    await loadProgress(u.id, u.email);
-  } else {
-    var accounts = JSON.parse(localStorage.getItem('nb_accounts') || '{}');
-    btn.disabled = false; btn.textContent = 'Access Program';
-    if (!accounts[email]) return showMsg('l-msg', 'No account found.', 'err');
-    if (accounts[email].pass !== btoa(pass)) return showMsg('l-msg', 'Incorrect password.', 'err');
-    state.user = { email: email, name: accounts[email].name };
-    var p = localStorage.getItem('nb_prog_' + email);
-    state.prog = p ? JSON.parse(p) : {};
-  }
-  launchApp();
-}
-async function doReg() {
-  var name = document.getElementById('r-name').value.trim();
-  var email = document.getElementById('r-email').value.trim().toLowerCase();
-  var pass = document.getElementById('r-pass').value;
-  if (!name || !email || !pass) return showMsg('r-msg', 'Please fill in all fields.', 'err');
-  if (pass.length < 6) return showMsg('r-msg', 'Password must be at least 6 characters.', 'err');
-  if (!email.includes('@')) return showMsg('r-msg', 'Please enter a valid email address.', 'err');
-  var btn = document.getElementById('r-btn');
-  btn.disabled = true; btn.textContent = 'Enrolling...';
-  if (sb) {
-    var res = await sb.auth.signUp({ email: email, password: pass, options: { data: { full_name: name } } });
-    btn.disabled = false; btn.textContent = 'Begin Enrollment';
-    if (res.error) return showMsg('r-msg', res.error.message, 'err');
-    showMsg('r-msg', 'Enrolled! Check your email to confirm, then sign in.', 'ok');
-  } else {
-    var accounts = JSON.parse(localStorage.getItem('nb_accounts') || '{}');
-    btn.disabled = false; btn.textContent = 'Begin Enrollment';
-    if (accounts[email]) return showMsg('r-msg', 'Account already exists.', 'err');
-    accounts[email] = { name: name, pass: btoa(pass) };
-    localStorage.setItem('nb_accounts', JSON.stringify(accounts));
-    showMsg('r-msg', 'Enrolled! Switch to Sign In.', 'ok');
-  }
-}
-async function doLogout() {
-  await saveState();
-  if (sb) await sb.auth.signOut();
-  state = { user: null, prog: {} };
-  document.getElementById('app-screen').classList.remove('active');
-  document.getElementById('auth-screen').classList.add('active');
-}
-async function doSetPassword() {
-  var np = document.getElementById('pwd-new').value;
-  var cp = document.getElementById('pwd-confirm').value;
-  var btn = document.getElementById('pwd-btn');
-  var msg = document.getElementById('pwd-msg');
-  msg.className = 'msg'; msg.textContent = '';
-  if (!np || !cp) { msg.textContent = 'Please fill in both fields.'; msg.className = 'msg err'; return; }
-  if (np.length < 6) { msg.textContent = 'Password must be at least 6 characters.'; msg.className = 'msg err'; return; }
-  if (np !== cp) { msg.textContent = 'Passwords do not match.'; msg.className = 'msg err'; return; }
-  btn.disabled = true; btn.textContent = 'Saving...';
-  if (sb) {
-    var res = await sb.auth.updateUser({ password: np });
-    btn.disabled = false; btn.textContent = 'Save Password';
-    if (res.error) { msg.textContent = res.error.message; msg.className = 'msg err'; return; }
-    msg.textContent = 'Password saved! You can now log in from any device.';
-    msg.className = 'msg ok';
-    document.getElementById('pwd-new').value = '';
-    document.getElementById('pwd-confirm').value = '';
-  } else {
-    btn.disabled = false; btn.textContent = 'Save Password';
-    if (!state.user) return;
-    var accounts = JSON.parse(localStorage.getItem('nb_accounts') || '{}');
-    accounts[state.user.email] = { name: state.user.name, pass: btoa(np) };
-    localStorage.setItem('nb_accounts', JSON.stringify(accounts));
-    msg.textContent = 'Password saved!'; msg.className = 'msg ok';
-  }
-}
-
-// ============================================================
 // TASK LABELS
 // ============================================================
 const TASK_LABELS = {
@@ -1845,6 +1747,121 @@ function filterMentees(filter, btn) {
   btn.classList.add('on');
   renderInstructor(allMenteeData);
 }
+
+// ============================================================
+// LAUNCH APP
+// ============================================================
+function launchApp() {
+  document.getElementById('auth-screen').classList.remove('active');
+  document.getElementById('app-screen').classList.add('active');
+  var first = state.user.name.split(' ')[0];
+  var init = state.user.name.charAt(0).toUpperCase();
+  document.getElementById('av').textContent = init;
+  document.getElementById('uname').textContent = state.user.name.toUpperCase();
+  document.getElementById('greet').textContent = 'Welcome back, ' + first;
+  if (!state.prog.name) { state.prog.name = state.user.name; state.prog.email = state.user.email; saveState(); }
+  refreshUI();
+  nav('dash');
+}
+
+// ============================================================
+// AUTH
+// ============================================================
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('on'); });
+  btn.classList.add('on');
+  document.getElementById('f-login').style.display = id === 'login' ? 'block' : 'none';
+  document.getElementById('f-reg').style.display = id === 'reg' ? 'block' : 'none';
+  clearMsgs();
+}
+function clearMsgs() {
+  document.querySelectorAll('.msg').forEach(function(m) { m.className = 'msg'; m.textContent = ''; });
+}
+function showMsg(id, txt, type) {
+  var el = document.getElementById(id); el.textContent = txt; el.className = 'msg ' + type;
+}
+async function doLogin() {
+  var email = document.getElementById('l-email').value.trim().toLowerCase();
+  var pass = document.getElementById('l-pass').value;
+  if (!email || !pass) return showMsg('l-msg', 'Please fill in all fields.', 'err');
+  var btn = document.getElementById('l-btn');
+  btn.disabled = true; btn.textContent = 'Signing in...';
+  if (sb) {
+    var res = await sb.auth.signInWithPassword({ email: email, password: pass });
+    btn.disabled = false; btn.textContent = 'Access Program';
+    if (res.error) return showMsg('l-msg', res.error.message, 'err');
+    var u = res.data.user;
+    state.user = { id: u.id, email: u.email, name: (u.user_metadata && u.user_metadata.full_name) ? u.user_metadata.full_name : email.split('@')[0] };
+    await loadProgress(u.id, u.email);
+  } else {
+    var accounts = JSON.parse(localStorage.getItem('nb_accounts') || '{}');
+    btn.disabled = false; btn.textContent = 'Access Program';
+    if (!accounts[email]) return showMsg('l-msg', 'No account found.', 'err');
+    if (accounts[email].pass !== btoa(pass)) return showMsg('l-msg', 'Incorrect password.', 'err');
+    state.user = { email: email, name: accounts[email].name };
+    var p = localStorage.getItem('nb_prog_' + email);
+    state.prog = p ? JSON.parse(p) : {};
+  }
+  launchApp();
+}
+async function doReg() {
+  var name = document.getElementById('r-name').value.trim();
+  var email = document.getElementById('r-email').value.trim().toLowerCase();
+  var pass = document.getElementById('r-pass').value;
+  if (!name || !email || !pass) return showMsg('r-msg', 'Please fill in all fields.', 'err');
+  if (pass.length < 6) return showMsg('r-msg', 'Password must be at least 6 characters.', 'err');
+  if (!email.includes('@')) return showMsg('r-msg', 'Please enter a valid email address.', 'err');
+  var btn = document.getElementById('r-btn');
+  btn.disabled = true; btn.textContent = 'Enrolling...';
+  if (sb) {
+    var res = await sb.auth.signUp({ email: email, password: pass, options: { data: { full_name: name } } });
+    btn.disabled = false; btn.textContent = 'Begin Enrollment';
+    if (res.error) return showMsg('r-msg', res.error.message, 'err');
+    showMsg('r-msg', 'Enrolled! Check your email to confirm, then sign in.', 'ok');
+  } else {
+    var accounts = JSON.parse(localStorage.getItem('nb_accounts') || '{}');
+    btn.disabled = false; btn.textContent = 'Begin Enrollment';
+    if (accounts[email]) return showMsg('r-msg', 'Account already exists.', 'err');
+    accounts[email] = { name: name, pass: btoa(pass) };
+    localStorage.setItem('nb_accounts', JSON.stringify(accounts));
+    showMsg('r-msg', 'Enrolled! Switch to Sign In.', 'ok');
+  }
+}
+async function doLogout() {
+  await saveState();
+  if (sb) await sb.auth.signOut();
+  state = { user: null, prog: {} };
+  document.getElementById('app-screen').classList.remove('active');
+  document.getElementById('auth-screen').classList.add('active');
+}
+async function doSetPassword() {
+  var np = document.getElementById('pwd-new').value;
+  var cp = document.getElementById('pwd-confirm').value;
+  var btn = document.getElementById('pwd-btn');
+  var msg = document.getElementById('pwd-msg');
+  msg.className = 'msg'; msg.textContent = '';
+  if (!np || !cp) { msg.textContent = 'Please fill in both fields.'; msg.className = 'msg err'; return; }
+  if (np.length < 6) { msg.textContent = 'Password must be at least 6 characters.'; msg.className = 'msg err'; return; }
+  if (np !== cp) { msg.textContent = 'Passwords do not match.'; msg.className = 'msg err'; return; }
+  btn.disabled = true; btn.textContent = 'Saving...';
+  if (sb) {
+    var res = await sb.auth.updateUser({ password: np });
+    btn.disabled = false; btn.textContent = 'Save Password';
+    if (res.error) { msg.textContent = res.error.message; msg.className = 'msg err'; return; }
+    msg.textContent = 'Password saved! You can now log in from any device.';
+    msg.className = 'msg ok';
+    document.getElementById('pwd-new').value = '';
+    document.getElementById('pwd-confirm').value = '';
+  } else {
+    btn.disabled = false; btn.textContent = 'Save Password';
+    if (!state.user) return;
+    var accounts = JSON.parse(localStorage.getItem('nb_accounts') || '{}');
+    accounts[state.user.email] = { name: state.user.name, pass: btoa(np) };
+    localStorage.setItem('nb_accounts', JSON.stringify(accounts));
+    msg.textContent = 'Password saved!'; msg.className = 'msg ok';
+  }
+}
+
 
 // ============================================================
 // NAVIGATION
