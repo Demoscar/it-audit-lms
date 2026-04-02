@@ -1413,6 +1413,11 @@ var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 var sb = null;
 var state = { user: null, prog: {} };
 
+// ============================================================
+// INSTRUCTOR CONFIG -- set your email here
+// ============================================================
+var INSTRUCTOR_EMAIL = 'demoscar@gmail.com'; // <-- update with your actual email
+
 function initSupabase() {
   try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); return true; }
   catch(e) { console.warn('Supabase unavailable:', e); return false; }
@@ -1532,7 +1537,7 @@ async function submitWork(taskId) {
       throw new Error('Grading service error ' + response.status + ': ' + errText);
     }
     var data = await response.json();
-    console.log('AI response received:', JSON.stringify(data).slice(0, 200));
+    console.log('AI raw response:', JSON.stringify(data));
     var raw = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : '';
     if (!raw) throw new Error('Empty response from AI');
     
@@ -1628,13 +1633,13 @@ async function submitWork(taskId) {
     refreshUI();
 
   } catch(err) {
-    console.error(err);
-    fbPanel.innerHTML =
-      '<p style="color:var(--red-bright);font-family:\'DM Mono\',monospace;font-size:.7rem;">' +
-      'Grading unavailable right now. Your work has been saved. Click the button below to continue.' +
-      '</p>' +
-      '<button class="btn-complete" style="margin-top:.85rem" onclick="fallbackComplete(\'' + taskId + '\')">Mark Complete Manually</button>';
-  } finally {
+    console.error('submitWork error:', err);
+    var errMsg = err && err.message ? err.message : String(err);
+    fbPanel.className = 'fb-panel show';
+    fbPanel.innerHTML = '<p style="color:var(--red-bright);font-family:DM Mono,monospace;font-size:.7rem;margin-bottom:.5rem">Error: ' + errMsg + '</p><p style="color:var(--text-dim);font-family:DM Mono,monospace;font-size:.65rem;margin-bottom:.85rem">Your work is saved. Try resubmitting or mark complete manually.</p><button class="btn-complete" style="margin-top:.5rem" onclick="fallbackComplete(' + "'" + taskId + "'" + ')">Mark Complete Manually</button>';
+
+
+
     var used = (state.prog.attempts && state.prog.attempts[taskId]) ? state.prog.attempts[taskId] : 0;
     btn.disabled = used >= 3;
     if (btn.disabled) btn.textContent = 'Max Attempts Reached';
@@ -1660,15 +1665,19 @@ var currentFilter = 'all';
 
 async function loadInstructorData() {
   var container = document.getElementById('inst-mentees');
-  if (!sb) {
-    container.innerHTML = '<div class="no-subs">Instructor dashboard requires Supabase connection.</div>';
-    return;
-  }
   container.innerHTML = '<div class="no-subs">Loading mentee data...</div>';
   try {
-    var res = await sb.from('user_progress').select('*');
-    if (res.error) throw res.error;
-    var progressRows = res.data || [];
+    // Fetch all progress via Edge Function (bypasses RLS using service role)
+    var res = await fetch('https://bqnjuzoymvsopcrnffjk.supabase.co/functions/v1/get-all-progress', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+      },
+      body: JSON.stringify({ instructor_email: state.user.email })
+    });
+    if (!res.ok) throw new Error('Failed to load data: ' + res.status);
+    var progressRows = await res.json();
 
     allMenteeData = progressRows.map(function(row) {
       var prog = row.progress || {};
@@ -1789,11 +1798,11 @@ function launchApp() {
   document.getElementById('uname').textContent = state.user.name.toUpperCase();
   document.getElementById('greet').textContent = 'Welcome back, ' + first;
   if (!state.prog.name) { state.prog.name = state.user.name; state.prog.email = state.user.email; saveState(); }
+  var instNav = document.getElementById('sn-inst');
+  if (instNav) { instNav.style.display = state.user.email.toLowerCase() === INSTRUCTOR_EMAIL.toLowerCase() ? 'flex' : 'none'; }
   refreshUI();
   nav('dash');
 }
-
-// ============================================================
 // AUTH
 // ============================================================
 function switchTab(id, btn) {
